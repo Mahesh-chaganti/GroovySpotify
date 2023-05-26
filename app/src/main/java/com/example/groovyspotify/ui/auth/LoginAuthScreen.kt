@@ -31,6 +31,9 @@ import com.example.groovyspotify.data.googleAuth.GoogleAuthUiClient
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import font.helveticaFamily
 
 
 @Composable
@@ -100,131 +103,200 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF000000),
-                            Color(0xFFFFFFFF)
+                    Color.Black
+//                    brush = Brush.verticalGradient(
+//                        colors = listOf(
+//                            Color(0xFF000000),
+//                            Color(0xFFFFFFFF)
+//
+//                        )
+//                    )
+                )
+        )
+        {
+
+            Column(
+                modifier = Modifier.padding(horizontal = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Welcome message
+                Text(
+                    modifier = Modifier.padding(vertical = 128.dp),
+                    text = "Welcome",
+                    fontSize = 36.sp,
+                    fontFamily = helveticaFamily,
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+                // Phone number input field
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text(
+                                text = "Email",
+                            fontSize = 18.sp,
+                            fontFamily = helveticaFamily,
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        ) },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Color.White,
+                            textColor = Color.White,
+                            backgroundColor = Color.DarkGray,
+                            focusedBorderColor = Color(0xFF0890CD),
+                            unfocusedBorderColor = Color.White,
+                            disabledTextColor = Color.White,
+                            focusedLabelColor = Color(0xFF0890CD),
+                            placeholderColor = Color.White
 
                         )
                     )
-                )
-        )
-
-        Column(
-            modifier = Modifier.padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Welcome message
-            Text(
-                text = "Welcome",
-                style = MaterialTheme.typography.h4,
-                color = Color.White,
-                modifier = Modifier.padding(vertical = 64.dp)
-            )
-
-            // Phone number input field
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-
-                    ) {
-                    Checkbox(
-                        checked = rememberMe,
-                        onCheckedChange = { isChecked -> rememberMe = isChecked },
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text(
+                            text = "Password",
+                            fontSize = 18.sp,
+                            fontFamily = helveticaFamily,
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                                },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Color.White,
+                            textColor = Color.White,
+                            backgroundColor = Color.DarkGray,
+                            focusedBorderColor = Color(0xFF0890CD),
+                            unfocusedBorderColor = Color.White,
+                            disabledTextColor = Color.White,
+                            focusedLabelColor = Color(0xFF0890CD),
+                            placeholderColor = Color.White
 
                         )
+                    )
+                }
+//                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+
+                        ) {
+                        Checkbox(
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Color(0xFFFF5722),
+                                uncheckedColor = Color.White,
+                                checkmarkColor = Color(0xFFFF5722),
+                                disabledColor = Color.DarkGray
+                            ),
+                            checked = rememberMe,
+                            onCheckedChange = { isChecked -> rememberMe = isChecked },
+
+                            )
+                        Text(
+                            text = "Remember me",
+                            fontSize = 18.sp,
+                            fontFamily = helveticaFamily,
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White
+                        )
+                    }
+
+
+                        Text(
+                            modifier= Modifier.clickable {  },
+                            text = "Forgot Password",
+                            fontSize = 18.sp,
+                            fontFamily = helveticaFamily,
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF0091D4)
+                        )
+
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Login button
+                Button(
+                    onClick = {
+
+                        viewModel?.login(email = email, password = password)
+                        navController?.navigate("ProfileScreenLanguage")
+
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
                     Text(
-                        text = "Remember Me",
-                        style = MaterialTheme.typography.body1,
-                        fontSize = 12.sp
+                        text = "Login",
+                        fontSize = 18.sp,
+                        fontFamily = helveticaFamily,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Divider(
+                        color = Color.White,
+                        modifier = Modifier
+                            .size(width = 150.dp, height = 1.dp)
+
+                            .padding(horizontal = 16.dp)
+                    )
+                    Text(
+
+                        text = "Or",
+                        fontSize = 18.sp,
+                        fontFamily = helveticaFamily,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White
+                    )
+                    Divider(
+                        color = Color.White,
+                        modifier = Modifier
+                            .size(width = 150.dp, height = 1.dp)
+
+                            .padding(horizontal = 16.dp)
                     )
                 }
 
-                Text(
-                    text = "Forgot Password",
-                    style = MaterialTheme.typography.body2,
-                    modifier = Modifier.clickable { /* Handle forgot password click */ },
-                    fontSize = 12.sp
-                )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Get OTP button
-            Button(
-                onClick = {
-
-                    viewModel?.login(email = email, password = password)
-
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(text = "Login", fontSize = 18.sp)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Divider(
-                    color = Color.Black,
-                    modifier = Modifier
-                        .size(width = 150.dp, height = 1.dp)
-
-                        .padding(horizontal = 16.dp)
-                )
-                Text(
-                    text = "or",
-
-                    )
-                Divider(
-                    color = Color.Black,
-                    modifier = Modifier
-                        .size(width = 150.dp, height = 1.dp)
-
-                        .padding(horizontal = 16.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
+                Button(
+                    onClick = {
 
 //                    //continue with google
 //                    val gso= GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -236,116 +308,139 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
 //
 //                    launcher.launch(googleSingInClient.signInIntent)
 
-                       scope.launch {
+                        scope.launch {
 
-                           try {
-                               val signInIntentSender = googleAuthUiClient.signIn()
-                               launcher.launch(
-                                   IntentSenderRequest.Builder(
-                                       signInIntentSender ?: return@launch
-                                   ).build()
-                               )
+                            try {
+                                val signInIntentSender = googleAuthUiClient.signIn()
+                                launcher.launch(
+                                    IntentSenderRequest.Builder(
+                                        signInIntentSender ?: return@launch
+                                    ).build()
+                                )
 
-                           }catch (e: Exception){
-                               Log.d("buttonClick", "LoginAuthScreen:$e ")
-                           }
+                            } catch (e: Exception) {
+                                Log.d("buttonClick", "LoginAuthScreen:$e ")
+                            }
                         }
 
 
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF03A9F4)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(painter = painterResource(id = R.drawable.img), contentDescription = null)
-                Text(text = "Continue with Google", fontSize = 18.sp)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {
-
-
-                },
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF03A9F4)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Icon(painter = painterResource(id = R.drawable.img_1), contentDescription = null)
-                Text(text = "Continue with Phone", fontSize = 18.sp)
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = "Don't have an account?",
-                    style = MaterialTheme.typography.body2,
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = "Signup",
-                    style = MaterialTheme.typography.body2,
-                    fontSize = 12.sp,
-                    modifier = Modifier.clickable { navController?.navigate("SignUpScreen") }
-
-                )
-            }
-        }
-        loginFlow?.value.let {
-            when (it) {
-                is Resource.Failure -> {
-                    val context = LocalContext.current
-                    Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                    ,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp)
+                            .size(40.dp),
+                        painter = painterResource(id = R.drawable.img),
+                        contentDescription = null)
+                    Text(
+                        text = "Continue with Google",
+                        fontSize = 18.sp,
+                        fontFamily = helveticaFamily,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+//                Button(
+//                    onClick = {
+//
+//
+//                    },
+//                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.White),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(64.dp),
+//                    shape = RoundedCornerShape(16.dp)
+//                ) {
+//                    Icon(
+//                        modifier = Modifier.padding(horizontal = 8.dp),
+//                        painter = painterResource(id = R.drawable.img_1),
+//                        contentDescription = null
+//                    )
+//                    Text(text = "Continue with Phone", fontSize = 18.sp)
+//                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        text = "Don't have an account?",
+                        fontSize = 18.sp,
+                        fontFamily = helveticaFamily,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White,
+                    )
+                    Text(
+                        text = "SignUp",
+                        fontSize = 18.sp,
+                        fontFamily = helveticaFamily,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.Medium,
+                        color =Color(0xFF0091D4),
+                        modifier = Modifier.clickable { navController?.navigate("SignUpScreen") }
 
-                Resource.Loading -> {
-                    CircularProgressIndicator()
+                    )
                 }
+            }
+            loginFlow?.value.let {
+                when (it) {
+                    is Resource.Failure -> {
+                        val context = LocalContext.current
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                    }
 
-                is Resource.Success -> {
-                    LaunchedEffect(Unit) {
-                        navController?.navigate("HomeScreen") {
-                            popUpTo("HomeScreen") {
-                                inclusive = true
+                    Resource.Loading -> {
+                        CircularProgressIndicator()
+                    }
+
+                    is Resource.Success -> {
+                        LaunchedEffect(Unit) {
+                            navController?.navigate("ProfileScreenLanguage") {
+                                popUpTo("ProfileScreenLanguage") {
+                                    inclusive = true
+                                }
                             }
                         }
                     }
-                }
 
-                else -> {}
+                    else -> {}
+                }
             }
-        }
 
-        googleSignInFlow?.value.let {
-            when (it) {
-                is Resource.Failure -> {
-                    val context = LocalContext.current
-                    Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
-                }
+            googleSignInFlow?.value.let {
+                when (it) {
+                    is Resource.Failure -> {
+                        val context = LocalContext.current
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                    }
 
-                Resource.Loading -> {
-                    CircularProgressIndicator()
-                }
+                    Resource.Loading -> {
+                        CircularProgressIndicator()
+                    }
 
-                is Resource.Success -> {
-                    LaunchedEffect(Unit) {
-                        navController?.navigate("HomeScreen") {
-                            popUpTo("HomeScreen") {
-                                inclusive = true
+                    is Resource.Success -> {
+                        LaunchedEffect(Unit) {
+                            navController?.navigate("ProfileScreenLanguage") {
+                                popUpTo("ProfileScreenLanguage") {
+                                    inclusive = true
+                                }
                             }
                         }
                     }
+
+                    else -> {}
                 }
-
-                else -> {}
             }
-        }
 
+        }
     }
 }
 

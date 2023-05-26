@@ -16,38 +16,35 @@ import androidx.navigation.NavController
 import com.example.groovyspotify.data.utils.SpotifyConstant
 import kotlinx.coroutines.launch
 
-@Composable
-fun ClientCredentialsAuthScreen(spotifyApiViewModel: SpotifyApiViewModel, navController: NavController) {
-
-    val clientId = SpotifyConstant.clientId // Your client id
-    val clientSecret = SpotifyConstant.clientSecret// Your secret
-
-    val authHeader = "Basic " + Base64.encodeToString("$clientId:$clientSecret".toByteArray(), Base64.NO_WRAP)
-
-
- val scope = rememberCoroutineScope()
-    Button(onClick = {
-        scope.launch {
-            try {
-                val authRequest = spotifyApiViewModel.getAccessToken(authHeader)
-
-                    // Handle authentication request failure here
-
-            } catch (e: Exception) {
-                // Handle network or API-related errors here
-                Log.d("ClientAccessTokenCall", "ClientCredentialsAuthScreen: $e")
-            }
-        }
-        navController.navigate("HomeScreen")
-    }
-    ){
-        Text(
-            text = "Lets Launch",
-            fontSize = 28.sp,
-            modifier = Modifier.fillMaxWidth().height(200.dp),
-            color = Color.White
-        )
-    }
-
-
-}
+//@Composable
+//fun ClientCredentialsAuthScreen(spotifyApiViewModel: SpotifyApiViewModel, navController: NavController) {
+//
+//
+//
+//
+// val scope = rememberCoroutineScope()
+//    Button(onClick = {
+//        scope.launch {
+//            try {
+//                val authRequest = spotifyApiViewModel.getAccessToken(authHeader)
+//
+//                    // Handle authentication request failure here
+//
+//            } catch (e: Exception) {
+//                // Handle network or API-related errors here
+//                Log.d("ClientAccessTokenCall", "ClientCredentialsAuthScreen: $e")
+//            }
+//        }
+//        navController.navigate("HomeScreen")
+//    }
+//    ){
+//        Text(
+//            text = "Lets Launch",
+//            fontSize = 28.sp,
+//            modifier = Modifier.fillMaxWidth().height(200.dp),
+//            color = Color.White
+//        )
+//    }
+//
+//
+//}

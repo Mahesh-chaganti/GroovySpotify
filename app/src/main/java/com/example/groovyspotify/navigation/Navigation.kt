@@ -7,11 +7,13 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import com.example.groovyspotify.ui.home.HomeScreen
+//import com.example.groovyspotify.ui.home.HomeScreen
 import com.example.groovyspotify.ui.auth.LoginAuthScreen
 import com.example.groovyspotify.ui.auth.SignUpScreen
 import com.example.groovyspotify.ui.auth.AuthViewModel
-import com.example.groovyspotify.ui.spotifyauth.ClientCredentialsAuthScreen
+import com.example.groovyspotify.ui.profilescreens.ProfileFeaturedAudio
+import com.example.groovyspotify.ui.profilescreens.ProfileScreenArtist
+import com.example.groovyspotify.ui.profilescreens.ProfileScreenLanguage
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.*
@@ -24,7 +26,7 @@ fun NavigationScreen(
     viewModel: AuthViewModel, spotifyAuthViewModel: SpotifyApiViewModel
 ) {
     val navController = rememberAnimatedNavController()
-    AnimatedNavHost(navController, startDestination = "ClientCredentialsAuthScreen") {
+    AnimatedNavHost(navController, startDestination = "LoginAuthScreen") {
         composable(
             "LoginAuthScreen",
             enterTransition = {
@@ -87,37 +89,37 @@ fun NavigationScreen(
                 }
             }
         ) { SignUpScreen(viewModel, navController) }
-        composable(
-            "HomeScreen",
-            enterTransition = {
-                when (initialState.destination.route) {
-                    "LoginAuthScreen"->
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
-                    else -> null
-                }
-            },
-            exitTransition = {
-                when (targetState.destination.route) {
-                    "LoginAuthScreen" ->
-                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
-                    else -> null
-                }
-            },
-            popEnterTransition = {
-                when (initialState.destination.route) {
-                    "LoginAuthScreen" ->
-                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
-                    else -> null
-                }
-            },
-            popExitTransition = {
-                when (targetState.destination.route) {
-                    "LoginAuthScreen"->
-                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
-                    else -> null
-                }
-            }
-        ) { HomeScreen(viewModel, spotifyAuthViewModel, navController) }
+//        composable(
+//            "HomeScreen",
+//            enterTransition = {
+//                when (initialState.destination.route) {
+//                    "LoginAuthScreen"->
+//                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+//                    else -> null
+//                }
+//            },
+//            exitTransition = {
+//                when (targetState.destination.route) {
+//                    "LoginAuthScreen" ->
+//                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+//                    else -> null
+//                }
+//            },
+//            popEnterTransition = {
+//                when (initialState.destination.route) {
+//                    "LoginAuthScreen" ->
+//                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+//                    else -> null
+//                }
+//            },
+//            popExitTransition = {
+//                when (targetState.destination.route) {
+//                    "LoginAuthScreen"->
+//                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+//                    else -> null
+//                }
+//            }
+//        ) { HomeScreen(viewModel, spotifyAuthViewModel, navController) }
 //        composable(
 //            "SpotifyAuthenticationScreen",
 //            enterTransition = {
@@ -150,7 +152,7 @@ fun NavigationScreen(
 //            }
 //        ) { SpotifyAuthenticationScreen(spotifyAuthViewModel, navController) }
         composable(
-            "ClientCredentialsAuthScreen",
+            "ProfileScreenLanguage",
             enterTransition = {
                 when (initialState.destination.route) {
                     "LoginAuthScreen"->
@@ -179,7 +181,69 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { ClientCredentialsAuthScreen(spotifyAuthViewModel, navController) }
+        ) { ProfileScreenLanguage( spotifyApiViewModel = spotifyAuthViewModel,navController) }
+        composable(
+            "ProfileScreenArtist",
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            }
+        ) { ProfileScreenArtist(spotifyApiViewModel = spotifyAuthViewModel, navController) }
+        composable(
+            "ProfileFeaturedAudio",
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            }
+        ) { ProfileFeaturedAudio(spotifyApiViewModel = spotifyAuthViewModel, navController) }
     }
 }
 

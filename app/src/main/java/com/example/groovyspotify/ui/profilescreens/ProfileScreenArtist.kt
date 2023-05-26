@@ -1,5 +1,8 @@
 package com.example.groovyspotify.ui.profilescreens
 
+import android.util.Base64
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,17 +23,21 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -40,17 +47,42 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
+import com.example.groovyspotify.data.utils.Resource
+import com.example.groovyspotify.data.utils.SpotifyConstant
 import com.example.groovyspotify.model.profile.MusicLanguage
 import com.example.groovyspotify.model.profile.ProfileArtist
 import com.example.groovyspotify.model.profile.listOfEnglishArtists
 import com.example.groovyspotify.model.profile.listOfMusicLanguages
+import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import font.helveticaFamily
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 @Composable
-fun ProfileScreenArtist(navController: NavController) {
+fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController: NavController) {
     val random = Random
 
+    var accessToken by remember{ mutableStateOf("") }
+    val accessTokenState = spotifyApiViewModel?.accessTokenResponse?.collectAsState()
+    accessTokenState?.value.let {
+        when (it) {
+            is Resource.Failure -> {
+                val context = LocalContext.current
+                Toast.makeText(context, it.exception.message + "Token", Toast.LENGTH_LONG).show()
+            }
+
+            Resource.Loading -> {
+                CircularProgressIndicator()
+            }
+
+            is Resource.Success -> {
+
+                accessToken = it.data.accessToken
+            }
+
+            else -> {}
+        }
+    }
     val randomSubset = listOfEnglishArtists.shuffled(random).take(5)
     Box(
         modifier = Modifier
@@ -113,7 +145,16 @@ fun ProfileScreenArtist(navController: NavController) {
                 .padding(24.dp),
             shape = RoundedCornerShape(24.dp),
             onClick = {
-                navController.navigate("")
+
+                navController.navigate("ProfileFeaturedAudio")
+
+                spotifyApiViewModel!!.getSearchTAPData(
+                    query = "Manisharma",
+                    type = "album,track,playlist",
+                    limit = 10,
+                    market = "IN",
+                authorization = "Bearer $accessToken")
+
             },
             colors = ButtonDefaults
                 .buttonColors(
@@ -133,7 +174,7 @@ fun ProfileScreenArtist(navController: NavController) {
             )
             Icon(
                 painter = painterResource(id = R.drawable.round_navigate_next_24),
-                contentDescription = "Back"
+                contentDescription = "Next Screen"
             )
         }
     }
@@ -173,6 +214,6 @@ fun ButtonArtist(modifier: Modifier, itemArtist: ProfileArtist?) {
 @Preview
 @Composable
 fun ProfileScreenArtistPreview() {
-    ProfileScreenArtist(rememberNavController())
+    ProfileScreenArtist(spotifyApiViewModel = null,rememberNavController())
 }
 

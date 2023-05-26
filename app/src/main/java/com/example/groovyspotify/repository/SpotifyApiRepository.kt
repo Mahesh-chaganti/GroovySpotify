@@ -2,7 +2,8 @@ package com.example.groovyspotify.repository
 
 import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.model.SpotifyAccessTokenResponse
-import com.example.groovyspotify.model.spotifyapidata.TrackResponse
+import com.example.groovyspotify.model.spotifyapidata.searchTAP.TrackAlbumPlaylist
+import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.network.SpotifyApi
 import com.example.groovyspotify.network.SpotifyTokenService
 import javax.inject.Inject
@@ -21,11 +22,11 @@ class SpotifyApiRepository @Inject constructor(private val api: SpotifyApi,priva
         return Resource.Success(data = result)
     }
 
-    suspend fun getTrackData(trackId : String, authorization: String): Resource<TrackResponse> {
+    suspend fun getSearchTAPData(query : String, authorization: String, type: String, limit: Int, market: String): Resource<TrackAlbumPlaylist> {
 
-            val result : TrackResponse =
+            val result : TrackAlbumPlaylist =
                 try {
-                    api.getTrackData(trackId = trackId, authorization = authorization)
+                    api.getSearchTAPData(authorization = authorization, query = query, type = type, limit = limit, market = market  )
 
 
         }catch(e: Exception){

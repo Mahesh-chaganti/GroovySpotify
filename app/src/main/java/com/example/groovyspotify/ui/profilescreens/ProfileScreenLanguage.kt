@@ -1,5 +1,7 @@
 package com.example.groovyspotify.ui.profilescreens
 
+import android.util.Base64
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,13 +38,21 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
+import com.example.groovyspotify.data.utils.SpotifyConstant
 import com.example.groovyspotify.model.profile.MusicLanguage
 import com.example.groovyspotify.model.profile.ProfileArtist
 import com.example.groovyspotify.model.profile.listOfMusicLanguages
+import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import font.helveticaFamily
+import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileScreenLanguage(navController: NavController) {
+fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navController: NavController) {
+    val clientId = SpotifyConstant.clientId // Your client id
+    val clientSecret = SpotifyConstant.clientSecret// Your secret
+    val scope = rememberCoroutineScope()
+    val authHeader = "Basic " + Base64.encodeToString("$clientId:$clientSecret".toByteArray(), Base64.NO_WRAP)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -102,6 +113,17 @@ fun ProfileScreenLanguage(navController: NavController) {
             shape = RoundedCornerShape(24.dp),
             onClick = {
                 navController.navigate("ProfileScreenArtist")
+                scope.launch {
+                    try {
+                        spotifyApiViewModel!!.getAccessToken(authHeader)
+
+
+
+                    } catch (e: Exception) {
+                        // Handle network or API-related errors here
+                        Log.d("ClientAccessTokenCall", "ClientCredentialsAuthScreen: $e")
+                    }
+                }
             },
             colors = ButtonDefaults
                 .buttonColors(
@@ -121,7 +143,7 @@ fun ProfileScreenLanguage(navController: NavController) {
             )
             Icon(
                 painter = painterResource(id = R.drawable.round_navigate_next_24),
-                contentDescription = "Back"
+                contentDescription = "Next"
             )
         }
     }
@@ -162,5 +184,5 @@ fun UniversalButton(modifier: Modifier, itemLanguage: MusicLanguage?) {
 @Preview
 @Composable
 fun ButtonPreview() {
-    ProfileScreenLanguage(rememberNavController())
+    ProfileScreenLanguage(spotifyApiViewModel = null,rememberNavController())
 }
