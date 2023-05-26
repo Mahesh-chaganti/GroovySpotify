@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "470875386731",
+    "project_id": "groovyspotify18",
+    "storage_bucket": "groovyspotify18.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:470875386731:android:363be7bcf3b30e5d5b922e",
+        "android_client_info": {
+          "package_name": "com.example.groovyspotify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "470875386731-gqesq0m87bh7l1kcj69d57a8aeerhc0i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.groovyspotify",
+            "certificate_hash": "bc5ed9594953bb768cd190f735b91b2b766a4013"
+          }
+        },
+        {
+          "client_id": "470875386731-cd1cqmahvrng4b7knchh1ekn16n6c00d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUluGKZ8WJDQLZhAib4GPz0bvINIYNG7Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "470875386731-cd1cqmahvrng4b7knchh1ekn16n6c00d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
