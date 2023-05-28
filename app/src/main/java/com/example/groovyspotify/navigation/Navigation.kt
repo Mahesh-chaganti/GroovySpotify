@@ -11,6 +11,8 @@ import androidx.navigation.NavHostController
 import com.example.groovyspotify.ui.auth.LoginAuthScreen
 import com.example.groovyspotify.ui.auth.SignUpScreen
 import com.example.groovyspotify.ui.auth.AuthViewModel
+import com.example.groovyspotify.ui.exoplayer.ExoplayerImpl
+import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
 import com.example.groovyspotify.ui.profilescreens.ProfileFeaturedAudio
 import com.example.groovyspotify.ui.profilescreens.ProfileScreenArtist
 import com.example.groovyspotify.ui.profilescreens.ProfileScreenLanguage
@@ -23,7 +25,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationScreen(
-    viewModel: AuthViewModel, spotifyAuthViewModel: SpotifyApiViewModel
+    viewModel: AuthViewModel, spotifyAuthViewModel: SpotifyApiViewModel,navEliminationViewModel: NavEliminationViewModel
 ) {
     val navController = rememberAnimatedNavController()
     AnimatedNavHost(navController, startDestination = "LoginAuthScreen") {
@@ -243,7 +245,38 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { ProfileFeaturedAudio(spotifyApiViewModel = spotifyAuthViewModel, navController) }
+        ) { ProfileFeaturedAudio(spotifyApiViewModel = spotifyAuthViewModel, navEliminationViewModel = navEliminationViewModel, navController = navController) }
+        composable(
+            "ExoPlayerImpl",
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            }
+        ) { ExoplayerImpl(navEliminationViewModel = navEliminationViewModel, navController) }
     }
 }
 

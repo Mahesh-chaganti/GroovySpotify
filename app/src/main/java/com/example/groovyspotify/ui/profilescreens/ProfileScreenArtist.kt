@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
@@ -98,10 +99,20 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
 //                )
             )
     ) {
+        Icon(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(18.dp)
+                .size(24.dp),
+            painter = painterResource(id = R.drawable.round_arrow_back_ios_24),
+            contentDescription = "Back button",
+            tint = Color(0xFFFF5722)
+        )
+
         Text(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(24.dp),
+                .padding(start = 60.dp, top = 8.dp),
             text = "Please select your favourite artists",
             fontSize = 32.sp,
             color = Color.White,

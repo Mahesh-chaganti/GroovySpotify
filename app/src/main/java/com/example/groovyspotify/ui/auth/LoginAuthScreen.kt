@@ -259,7 +259,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                         fontSize = 18.sp,
                         fontFamily = helveticaFamily,
                         fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Medium
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -343,7 +343,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                         fontSize = 18.sp,
                         fontFamily = helveticaFamily,
                         fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Medium
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))

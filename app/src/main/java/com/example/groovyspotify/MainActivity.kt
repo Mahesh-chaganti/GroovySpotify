@@ -19,6 +19,7 @@ import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.theme.GroovySpotifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.groovyspotify.navigation.NavigationScreen
+import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 
 @AndroidEntryPoint
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel by  viewModels<AuthViewModel>()
     private val spotifyAuthViewModel by  viewModels<SpotifyApiViewModel>()
+    private val navEliminationViewModel by viewModels<NavEliminationViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +35,7 @@ class MainActivity : ComponentActivity() {
             GroovySpotifyTheme {
                 // A surface container using the 'background' color from the theme
 
-                    NavigationScreen(viewModel = viewModel,spotifyAuthViewModel = spotifyAuthViewModel)
+                    NavigationScreen(viewModel = viewModel,spotifyAuthViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel)
 
 
             }

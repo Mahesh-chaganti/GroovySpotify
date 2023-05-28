@@ -14,7 +14,7 @@ data class TrackResponse(
     val is_local: Boolean,
     val name: String,
     val popularity: Int,
-    val preview_url: Any,
+    val preview_url: String,
     val track_number: Int,
     val type: String,
     val uri: String

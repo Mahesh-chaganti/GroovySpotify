@@ -223,7 +223,7 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                         fontSize = 18.sp,
                         fontFamily = helveticaFamily,
                         fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Medium,
                         color = Color.White
                     )
                 }
