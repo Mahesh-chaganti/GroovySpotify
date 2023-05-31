@@ -3,6 +3,7 @@ package com.example.groovyspotify.ui.profilescreens
 import android.util.Base64
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,11 +71,13 @@ fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navControlle
             )
     )
     {
+
         Icon(
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(18.dp)
-                .size(24.dp),
+                .size(24.dp)
+                .clickable { navController.popBackStack() },
             painter = painterResource(id = R.drawable.round_arrow_back_ios_24),
             contentDescription = "Back button",
             tint = Color(0xFFFF5722)

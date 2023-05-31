@@ -86,7 +86,8 @@ fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminatio
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(18.dp)
-                .size(24.dp),
+                .size(24.dp)
+                .clickable { navController.popBackStack() },
             painter = painterResource(id = R.drawable.round_arrow_back_ios_24),
             contentDescription = "Back button",
             tint = Color(0xFFFF5722)

@@ -207,7 +207,7 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        navController?.navigate("ProfileScreenLanguage")
+//                        navController?.navigate("LoginAuthScreen")
                         // SignUp
                         viewModel?.signup(name, email, password)
 
@@ -254,7 +254,7 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
 
                         is Resource.Success -> {
                             LaunchedEffect(Unit) {
-                                navController?.navigate("ProfileScreenLanguage") {
+                                navController?.navigate("LoginAuthScreen") {
                                     popUpTo("SignUpScreen") { inclusive = true }
                                 }
                             }

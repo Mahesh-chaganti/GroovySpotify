@@ -1,8 +1,14 @@
 package com.example.groovyspotify
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -15,11 +21,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.theme.GroovySpotifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.groovyspotify.navigation.NavigationScreen
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
+//import com.example.groovyspotify.ui.profilescreens.loadImageFromUri
+//import com.example.groovyspotify.ui.profilescreens.openGallery
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 
 @AndroidEntryPoint
@@ -28,6 +37,8 @@ class MainActivity : ComponentActivity() {
     private val viewModel by  viewModels<AuthViewModel>()
     private val spotifyAuthViewModel by  viewModels<SpotifyApiViewModel>()
     private val navEliminationViewModel by viewModels<NavEliminationViewModel>()
+//    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+//    private lateinit var getContent: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,9 +50,62 @@ class MainActivity : ComponentActivity() {
 
 
             }
+//            initializeActivityResults()
         }
     }
 
+
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//    }
+//
+//
+//    private fun hasReadStoragePermission(context: Context): Boolean {
+//        return ContextCompat.checkSelfPermission(
+//            context,
+//            Manifest.permission.READ_EXTERNAL_STORAGE
+//        ) == PackageManager.PERMISSION_GRANTED
+//    }
+//
+//    private fun requestReadStoragePermission() {
+//        requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+//    }
+//
+//    private fun initializeActivityResults() {
+//        requestPermissionLauncher = registerForActivityResult(
+//            ActivityResultContracts.RequestPermission()
+//        ) { isGranted ->
+//            if (isGranted) {
+//                openGallery()
+//            }
+//        }
+//
+//        getContent = registerForActivityResult(
+//            ActivityResultContracts.GetContent()
+//        ) { uri: Uri? ->
+//            uri?.let { selectedImageUri ->
+//                loadImageFromUri(selectedImageUri)
+//            }
+//        }
+//    }
+
+//    private fun hasReadContactsPermission(context: Context): Boolean {
+//        return ContextCompat.checkSelfPermission(
+//            context,
+//            Manifest.permission.READ_CONTACTS
+//        ) == PackageManager.PERMISSION_GRANTED
+//    }
+//
+//    private fun requestReadContactsPermission(activity: ComponentActivity) {
+//        activity.requestPermissions(
+//            arrayOf(Manifest.permission.READ_CONTACTS),
+//            REQUEST_CODE_PERMISSION
+//        )
+//    }
 
 }
 
@@ -119,10 +183,6 @@ fun MainScaffold() {
     }
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
 
 @Preview(showBackground = true)
 @Composable

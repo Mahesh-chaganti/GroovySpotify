@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import font.helveticaFamily
 
 
@@ -43,6 +46,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
     var rememberMe by remember { mutableStateOf(false) }
     var loginFlow = viewModel?.loginFlow?.collectAsState()
     val context = LocalContext.current
+    var passwordVisibility by remember { mutableStateOf(false) }
 
     var googleSignInFlow = viewModel?.googleState?.collectAsState()
     val scope = rememberCoroutineScope()
@@ -167,6 +171,15 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
+                        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                                Icon(
+                                    painter = painterResource(id = if (passwordVisibility) R.drawable.round_visibility_24 else R.drawable.round_visibility_off_24),
+                                    contentDescription = if (passwordVisibility) "Hide Password" else "Show Password"
+                                )
+                            }
+                        },
                         label = { Text(
                             text = "Password",
                             fontSize = 18.sp,
@@ -245,7 +258,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                     onClick = {
 
                         viewModel?.login(email = email, password = password)
-                        navController?.navigate("ProfileScreenLanguage")
+//                        navController?.navigate("ProfileScreenLanguage")
 
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
@@ -403,8 +416,8 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
 
                     is Resource.Success -> {
                         LaunchedEffect(Unit) {
-                            navController?.navigate("ProfileScreenLanguage") {
-                                popUpTo("ProfileScreenLanguage") {
+                            navController?.navigate("HomeScreen") {
+                                popUpTo("HomeScreen") {
                                     inclusive = true
                                 }
                             }
@@ -428,8 +441,8 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
 
                     is Resource.Success -> {
                         LaunchedEffect(Unit) {
-                            navController?.navigate("ProfileScreenLanguage") {
-                                popUpTo("ProfileScreenLanguage") {
+                            navController?.navigate("HomeScreen") {
+                                popUpTo("HomeScreen") {
                                     inclusive = true
                                 }
                             }

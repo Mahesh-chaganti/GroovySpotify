@@ -109,6 +109,9 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer:1.0.2"
     implementation "androidx.media3:media3-ui:1.0.2"
 
+    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.activity:activity-ktx:1.6.1'
+
     // OkHttp
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
 
