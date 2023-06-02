@@ -14,6 +14,8 @@ import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.exoplayer.ExoplayerImpl
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
 import com.example.groovyspotify.ui.home.HomeScreen
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
+import com.example.groovyspotify.ui.profilescreens.PhotoUploadScreen
 import com.example.groovyspotify.ui.profilescreens.ProfileFeaturedAudio
 import com.example.groovyspotify.ui.profilescreens.ProfileScreenArtist
 import com.example.groovyspotify.ui.profilescreens.ProfileScreenLanguage
@@ -26,7 +28,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationScreen(
-    viewModel: AuthViewModel, spotifyAuthViewModel: SpotifyApiViewModel,navEliminationViewModel: NavEliminationViewModel
+    viewModel: AuthViewModel, spotifyAuthViewModel: SpotifyApiViewModel,navEliminationViewModel: NavEliminationViewModel, firestoreViewModel: FirestoreViewModel
 ) {
     val navController = rememberAnimatedNavController()
     AnimatedNavHost(navController, startDestination = "LoginAuthScreen") {
@@ -60,7 +62,7 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { LoginAuthScreen(viewModel, navController) }
+        ) { LoginAuthScreen(viewModel, firestoreViewModel,navController) }
         composable(
             "SignUpScreen",
             enterTransition = {
@@ -91,7 +93,7 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { SignUpScreen(viewModel, navController) }
+        ) { SignUpScreen(viewModel, firestoreViewModel = firestoreViewModel,navController) }
 //
         composable(
             "ProfileScreenLanguage",
@@ -123,7 +125,7 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { ProfileScreenLanguage( spotifyApiViewModel = spotifyAuthViewModel,navController) }
+        ) { ProfileScreenLanguage( spotifyApiViewModel = spotifyAuthViewModel,firestoreViewModel = firestoreViewModel,navController) }
         composable(
             "ProfileScreenArtist",
             enterTransition = {
@@ -154,7 +156,7 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { ProfileScreenArtist(spotifyApiViewModel = spotifyAuthViewModel, navController) }
+        ) { ProfileScreenArtist(spotifyApiViewModel = spotifyAuthViewModel, firestoreViewModel = firestoreViewModel,navController) }
         composable(
             "ProfileFeaturedAudio",
             enterTransition = {
@@ -216,7 +218,7 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { ExoplayerImpl(navEliminationViewModel = navEliminationViewModel, navController) }
+        ) { ExoplayerImpl(navEliminationViewModel = navEliminationViewModel, firestoreViewModel = firestoreViewModel,navController) }
         composable(
             "HomeScreen",
             enterTransition = {
@@ -247,7 +249,39 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { HomeScreen(viewModel = viewModel, navController) }
+        ) { HomeScreen(viewModel = viewModel, firestoreViewModel = firestoreViewModel, navController) }
+        composable(
+            "PhotoUploadScreen",
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen"->
+                        slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(700))
+                    else -> null
+                }
+            }
+        ) { PhotoUploadScreen(firestoreViewModel = firestoreViewModel,navController) }
+
     }
 }
 

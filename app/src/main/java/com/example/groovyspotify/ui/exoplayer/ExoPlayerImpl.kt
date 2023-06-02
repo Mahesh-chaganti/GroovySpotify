@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -20,6 +24,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,13 +48,16 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.groovyspotify.R
 import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import font.helveticaFamily
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, navController: NavController) {
+fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, firestoreViewModel: FirestoreViewModel,navController: NavController) {
     val context = LocalContext.current
     val myData = navEliminationViewModel.myData
+
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
             .build()
@@ -144,7 +152,9 @@ fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, navControlle
         },
         title = { exoPlayer.mediaMetadata.displayTitle.toString() },
         playbackState = { playbackState },
-        track = myData!!
+        track = myData!!,
+        navController = navController,
+        firestoreViewModel = firestoreViewModel
     )
 
 
@@ -158,22 +168,28 @@ fun CenterControls(
     playbackState: () -> Int,
     onPauseToggle: () -> Unit,
     title: () -> String,
-    track: TrackResponse?
+    track: TrackResponse?,
+    navController: NavController?,
+    firestoreViewModel: FirestoreViewModel?
 ) {
     var isVideoPlaying = remember(isPlaying()) { isPlaying() }
 
     var title = remember(title()) { title() }
     var playerState by remember { mutableStateOf(playbackState()) }
-
+    var featuredAudio by remember { mutableStateOf("") }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        Column(modifier = Modifier.align(Alignment.TopCenter).padding(top = 160.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
-
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 160.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        )
+        {
 
 
             AsyncImage(
@@ -228,8 +244,78 @@ fun CenterControls(
                 )
             }
         }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp).align(Alignment.BottomCenter),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val scope = rememberCoroutineScope()
+            Button(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(40.dp),
+                shape = RoundedCornerShape(24.dp),
+                onClick = {
+                    navController?.popBackStack()
+                },
+                colors = ButtonDefaults
+                    .buttonColors(
 
+                        backgroundColor = Color(0xFFFF3A20),
+                        contentColor = Color.White
+
+
+                    )
+            ) {
+                Text(
+                    text = "Cancel",
+                    fontSize = 16.sp,
+                    fontFamily = helveticaFamily,
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.Medium
+                )
+
+            }
+            Button(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .padding(24.dp),
+                shape = RoundedCornerShape(24.dp),
+                onClick = {
+                    featuredAudio = track?.preview_url!!
+                    val mapData = mapOf(
+                        "featuredAudio" to featuredAudio)
+                    scope.launch {
+
+                        firestoreViewModel?.updateUserProfile(
+                            userName = firestoreViewModel?.myUsername!!,
+                            mapData = mapData
+                        )
+                    }
+                    navController?.navigate("PhotoUploadScreen")
+                },
+                colors = ButtonDefaults
+                    .buttonColors(
+
+                        backgroundColor = Color(0xFFFF3A20),
+                        contentColor = Color.White
+
+
+                    )
+            ) {
+                Text(
+                    text = "Set",
+                    fontSize = 16.sp,
+                    fontFamily = helveticaFamily,
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.Medium
+                )
+
+            }
+
+        }
     }
+
 }
 
 
@@ -241,7 +327,9 @@ fun PlayerControls(
     title: () -> String,
     playbackState: () -> Int,
     onPauseToggle: () -> Unit,
-    track: TrackResponse
+    track: TrackResponse,
+    navController: NavController?,
+    firestoreViewModel: FirestoreViewModel
 ) {
     //black overlay across the video player
 
@@ -261,7 +349,9 @@ fun PlayerControls(
             onPauseToggle = onPauseToggle,
             playbackState = playbackState,
             title = title,
-            track = track
+            track = track,
+            navController = navController,
+            firestoreViewModel = firestoreViewModel
         )
 
 
@@ -276,6 +366,8 @@ fun CentralControlsPreview() {
         playbackState = { 0 },
         onPauseToggle = { },
         title = { "" },
-        track = null
+        track = null,
+        navController = null,
+        firestoreViewModel = null
     )
 }

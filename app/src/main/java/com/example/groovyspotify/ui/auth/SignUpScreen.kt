@@ -17,6 +17,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,13 +26,22 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
 import com.example.groovyspotify.data.utils.Resource
+import com.example.groovyspotify.model.firestore.UserProfile
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import font.helveticaFamily
+import kotlinx.coroutines.launch
 
 @Composable
-fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
+fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewModel?, navController: NavController?) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisibility by remember { mutableStateOf(false) }
+    var confirmPasswordVisibility by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var signupFlow = viewModel?.signupFlow?.collectAsState()
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -53,7 +64,10 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
         )
         {
             Icon(
-                modifier= Modifier.align(Alignment.TopStart).padding(18.dp).size(24.dp),
+                modifier= Modifier
+                    .align(Alignment.TopStart)
+                    .padding(18.dp)
+                    .size(24.dp),
                 painter = painterResource(id = R.drawable.round_arrow_back_ios_24),
                 contentDescription ="Back button",
                 tint = Color(0xFFFF5722)
@@ -80,11 +94,42 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
+                        value = userName,
+                        onValueChange = { userName = it },
                         label = {
                             Text(
-                                text = "Name",
+                                text = "Username",
+                                fontSize = 18.sp,
+                                fontFamily = helveticaFamily,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Color.White,
+                            textColor = Color.White,
+                            backgroundColor = Color.DarkGray,
+                            focusedBorderColor = Color(0xFF0890CD),
+                            unfocusedBorderColor = Color.White,
+                            disabledTextColor = Color.White,
+                            focusedLabelColor = Color(0xFF0890CD),
+                            placeholderColor = Color.White
+
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = phone,
+                        onValueChange = { phone = it },
+                        label = {
+                            Text(
+                                text = "Phone number",
                                 fontSize = 18.sp,
                                 fontFamily = helveticaFamily,
                                 fontStyle = FontStyle.Normal,
@@ -154,6 +199,15 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                                 color = Color.White
                             )
                         },
+                        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                                Icon(
+                                    painter = painterResource(id = if (passwordVisibility) R.drawable.round_visibility_24 else R.drawable.round_visibility_off_24),
+                                    contentDescription = if (passwordVisibility) "Hide Password" else "Show Password"
+                                )
+                            }
+                        },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Text
                         ),
@@ -173,8 +227,8 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
                         label = {
                             Text(
                                 text = "Confirm Password",
@@ -185,6 +239,15 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                                 color = Color.White
                             )
                         },
+                        visualTransformation = if (confirmPasswordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPasswordVisibility = !confirmPasswordVisibility }) {
+                                Icon(
+                                    painter = painterResource(id = if (confirmPasswordVisibility) R.drawable.round_visibility_24 else R.drawable.round_visibility_off_24),
+                                    contentDescription = if (confirmPasswordVisibility) "Hide Password" else "Show Password"
+                                )
+                            }
+                        },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Text
                         ),
@@ -193,7 +256,7 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                             cursorColor = Color.White,
                             textColor = Color.White,
                             backgroundColor = Color.DarkGray,
-                            focusedBorderColor = Color(0xFF0890CD),
+                            focusedBorderColor = if(password== confirmPassword){Color(0xFF0890CD)} else Color.Red,
                             unfocusedBorderColor = Color.White,
                             disabledTextColor = Color.White,
                             focusedLabelColor = Color(0xFF0890CD),
@@ -204,20 +267,33 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
                     )
 
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
+                        val mapData = mapOf(
+                            "email" to email,
+                            "phone" to phone,
+                            "userName" to userName,
+                        )
 //                        navController?.navigate("LoginAuthScreen")
                         // SignUp
-                        viewModel?.signup(name, email, password)
+                        viewModel?.signup(userName, email, password)
+                        firestoreViewModel?.updateMyUsername(userName = userName)
+                        scope.launch{
+                            firestoreViewModel?.updateUserProfile(userName = userName, mapData = mapData)
+                        }
+
 
                     },
+                    enabled= password == confirmPassword,
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp),
                     shape = RoundedCornerShape(16.dp)
                 ) {
+
                     Text(
                         text = "Signup",
                         fontSize = 18.sp,
@@ -270,6 +346,6 @@ fun SignUpScreen(viewModel: AuthViewModel?, navController: NavController?) {
 @Preview
 @Composable
 fun SignUpPreview() {
-    SignUpScreen(null, rememberNavController())
+    SignUpScreen(null, firestoreViewModel = null,rememberNavController())
 
 }

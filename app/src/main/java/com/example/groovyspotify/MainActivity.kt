@@ -27,6 +27,7 @@ import com.example.groovyspotify.ui.theme.GroovySpotifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.groovyspotify.navigation.NavigationScreen
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 //import com.example.groovyspotify.ui.profilescreens.loadImageFromUri
 //import com.example.groovyspotify.ui.profilescreens.openGallery
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel by  viewModels<AuthViewModel>()
     private val spotifyAuthViewModel by  viewModels<SpotifyApiViewModel>()
     private val navEliminationViewModel by viewModels<NavEliminationViewModel>()
+    private val firestoreViewModel by viewModels<FirestoreViewModel>()
 //    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 //    private lateinit var getContent: ActivityResultLauncher<String>
 
@@ -46,7 +48,7 @@ class MainActivity : ComponentActivity() {
             GroovySpotifyTheme {
                 // A surface container using the 'background' color from the theme
 
-                    NavigationScreen(viewModel = viewModel,spotifyAuthViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel)
+                    NavigationScreen(viewModel = viewModel,spotifyAuthViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel)
 
 
             }

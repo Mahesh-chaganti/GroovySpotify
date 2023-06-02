@@ -24,23 +24,20 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
 import com.example.groovyspotify.data.utils.Resource
+import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.profilescreens.ContactSyncScreen
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.profilescreens.PhotoUploadScreen
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import font.helveticaFamily
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun HomeScreen(viewModel: AuthViewModel?,  navController: NavController) {
-
-
-
-
-//    val firestore = FirebaseFirestore.getInstance()
-//
-//
+fun HomeScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreViewModel?, navController: NavController) {
+    val scope = rememberCoroutineScope()
 ////    val trackState = spotifyApiViewModel?.trackState!!.collectAsState()
 //    var accessToken by remember{ mutableStateOf("") }
 //    val accessTokenState = spotifyApiViewModel?.accessTokenResponse?.collectAsState()
@@ -182,7 +179,39 @@ fun HomeScreen(viewModel: AuthViewModel?,  navController: NavController) {
                 )
             }
 //            PhotoUploadScreen()
-            ContactSyncScreen()
+//            ContactSyncScreen()
+            Button(
+                onClick = {
+//                    scope.launch {
+//                        firestoreViewModel?.addUserProfile(
+//                            userProfile = UserProfile(
+//                                name = viewModel?.currentUser?.displayName,
+//                                email = viewModel?.currentUser?.email,
+//                                phone = null,
+//                                profilePhotoUrl = null,
+//                                favoriteArtists = null,
+//                                myLanguages = null,
+//                                username = null,
+//                                featuredAudio = null
+//                            )
+//                        )
+//                    }
+
+                },
+                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = "Add me",
+                    fontSize = 18.sp,
+                    fontFamily = helveticaFamily,
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.Medium
+                )
+            }
 
 //            Column {
 //                Button(onClick = {
@@ -238,6 +267,7 @@ fun HomeScreen(viewModel: AuthViewModel?,  navController: NavController) {
 @Composable
 fun HomeScreenPreview() {
 
-    HomeScreen(null, rememberNavController())
+    HomeScreen(null, firestoreViewModel = null,rememberNavController())
+
 
 }

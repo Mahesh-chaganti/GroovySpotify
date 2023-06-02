@@ -3,25 +3,34 @@ package com.example.groovyspotify.ui.profilescreens
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 //import androidx.compose.foundation.layout.BoxScopeInstance.align
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -54,17 +63,20 @@ import com.example.groovyspotify.data.utils.SpotifyConstant
 import com.example.groovyspotify.model.profile.MusicLanguage
 import com.example.groovyspotify.model.profile.ProfileArtist
 import com.example.groovyspotify.model.profile.listOfEnglishArtists
+import com.example.groovyspotify.model.profile.listOfHindiArtists
 import com.example.groovyspotify.model.profile.listOfMusicLanguages
+import com.example.groovyspotify.model.profile.listOfTeluguArtists
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import font.helveticaFamily
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController: NavController) {
+fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?, firestoreViewModel: FirestoreViewModel?,navController: NavController) {
     val random = Random
-
-    var accessToken by remember{ mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    var accessToken by remember { mutableStateOf("") }
     val accessTokenState = spotifyApiViewModel?.accessTokenResponse?.collectAsState()
     accessTokenState?.value.let {
         when (it) {
@@ -85,7 +97,10 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
             else -> {}
         }
     }
-    val randomSubset = listOfEnglishArtists.shuffled(random).take(5)
+    val newList = listOfEnglishArtists + listOfHindiArtists + listOfTeluguArtists
+    val randomSubset = newList.chunked(5)
+    val favoriteArtists by remember { mutableStateOf(ArrayList<String>()) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -100,6 +115,7 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
 //                )
             )
     ) {
+
         Icon(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -122,32 +138,38 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
             fontStyle = FontStyle.Normal,
             fontWeight = FontWeight.ExtraBold
         )
-        Column(
+
+
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(5.dp)
+                .fillMaxSize()
+                .padding(20.dp)
                 .padding(top = 50.dp)
                 .align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
 
-            LazyHorizontalGrid(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalArrangement = Arrangement.Center,
-                rows = GridCells.Fixed(3)
             ) {
+            itemsIndexed(randomSubset) {index, items ->
 
-                itemsIndexed(randomSubset) { index, item ->
-                    ButtonArtist(
-                        modifier = Modifier.wrapContentSize(),
 
-                        itemArtist = item
-                    )
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+
+                ) {
+
+                    itemsIndexed(items) { index, item ->
+                        ButtonArtist(
+                            modifier = Modifier
+                                .wrapContentHeight(Alignment.CenterVertically)
+                                .padding(horizontal = 4.dp),
+
+                            itemArtist = item,
+                            onClick = { favoriteArtists.add(item.name)}
+                        )
+                    }
                 }
             }
         }
@@ -155,7 +177,7 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
             modifier = Modifier
                 .wrapContentSize()
                 .align(Alignment.BottomEnd)
-                .padding(24.dp),
+                .padding(40.dp),
             shape = RoundedCornerShape(24.dp),
             onClick = {
 
@@ -166,8 +188,16 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
                     type = "album,track,playlist",
                     limit = 10,
                     market = "IN",
-                authorization = "Bearer $accessToken")
-
+                    authorization = "Bearer $accessToken"
+                )
+                val mapData = mapOf(
+                    "favoriteArtists" to favoriteArtists)
+                scope.launch {
+                    firestoreViewModel?.updateUserProfile(
+                        userName = firestoreViewModel?.myUsername!!,
+                        mapData = mapData
+                    )
+                }
             },
             colors = ButtonDefaults
                 .buttonColors(
@@ -191,10 +221,12 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?,navController:
             )
         }
     }
+    
 }
 
+
 @Composable
-fun ButtonArtist(modifier: Modifier, itemArtist: ProfileArtist?) {
+fun ButtonArtist(modifier: Modifier, itemArtist: ProfileArtist?,onClick: () -> Unit) {
     var colorChange by remember { mutableStateOf(false) }
 
 
@@ -203,6 +235,7 @@ fun ButtonArtist(modifier: Modifier, itemArtist: ProfileArtist?) {
         shape = RoundedCornerShape(24.dp),
         onClick = {
             colorChange = !colorChange
+            onClick.invoke()
         },
         colors = ButtonDefaults
             .buttonColors(
@@ -227,6 +260,6 @@ fun ButtonArtist(modifier: Modifier, itemArtist: ProfileArtist?) {
 @Preview
 @Composable
 fun ProfileScreenArtistPreview() {
-    ProfileScreenArtist(spotifyApiViewModel = null,rememberNavController())
+    ProfileScreenArtist(spotifyApiViewModel = null, firestoreViewModel = null,rememberNavController())
 }
 

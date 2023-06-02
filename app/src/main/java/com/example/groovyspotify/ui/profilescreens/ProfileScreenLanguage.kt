@@ -41,6 +41,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
 import com.example.groovyspotify.data.utils.SpotifyConstant
+import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.model.profile.MusicLanguage
 import com.example.groovyspotify.model.profile.ProfileArtist
 import com.example.groovyspotify.model.profile.listOfMusicLanguages
@@ -49,12 +50,18 @@ import font.helveticaFamily
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navController: NavController) {
+fun ProfileScreenLanguage(
+    spotifyApiViewModel: SpotifyApiViewModel?,
+    firestoreViewModel: FirestoreViewModel?,
+    navController: NavController
+) {
     val clientId = SpotifyConstant.clientId // Your client id
     val clientSecret = SpotifyConstant.clientSecret// Your secret
     val scope = rememberCoroutineScope()
-    val authHeader = "Basic " + Base64.encodeToString("$clientId:$clientSecret".toByteArray(), Base64.NO_WRAP)
 
+    val authHeader =
+        "Basic " + Base64.encodeToString("$clientId:$clientSecret".toByteArray(), Base64.NO_WRAP)
+    val myLanguages by remember { mutableStateOf(ArrayList<String>()) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -103,7 +110,7 @@ fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navControlle
                 .align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
 
-        ) {
+            ) {
 
             LazyRow(
                 modifier = Modifier.fillMaxSize(),
@@ -114,7 +121,9 @@ fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navControlle
                     UniversalButton(
                         modifier = Modifier.wrapContentSize(),
                         itemLanguage = item,
+                        onClick = {myLanguages.add(item.language)}
                     )
+
                 }
             }
 
@@ -132,12 +141,17 @@ fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navControlle
                         spotifyApiViewModel!!.getAccessToken(authHeader)
 
 
-
                     } catch (e: Exception) {
                         // Handle network or API-related errors here
                         Log.d("ClientAccessTokenCall", "ClientCredentialsAuthScreen: $e")
                     }
+                    val mapData = mapOf(
+                        "myLanguages" to myLanguages
+                    )
+                    firestoreViewModel?.updateMyUsername(userName = "test1")
+                    firestoreViewModel?.updateUserProfile(userName = firestoreViewModel.myUsername!!, mapData = mapData)
                 }
+
             },
             colors = ButtonDefaults
                 .buttonColors(
@@ -164,7 +178,7 @@ fun ProfileScreenLanguage(spotifyApiViewModel: SpotifyApiViewModel?,navControlle
 }
 
 @Composable
-fun UniversalButton(modifier: Modifier, itemLanguage: MusicLanguage?) {
+fun UniversalButton(modifier: Modifier, itemLanguage: MusicLanguage?, onClick : () -> Unit) {
     var colorChange by remember { mutableStateOf(false) }
 
 
@@ -173,7 +187,7 @@ fun UniversalButton(modifier: Modifier, itemLanguage: MusicLanguage?) {
         shape = RoundedCornerShape(24.dp),
         onClick = {
             colorChange = !colorChange
-
+            onClick.invoke()
         },
         colors = ButtonDefaults
             .buttonColors(
@@ -198,5 +212,9 @@ fun UniversalButton(modifier: Modifier, itemLanguage: MusicLanguage?) {
 @Preview
 @Composable
 fun ButtonPreview() {
-    ProfileScreenLanguage(spotifyApiViewModel = null,rememberNavController())
+    ProfileScreenLanguage(
+        spotifyApiViewModel = null,
+        firestoreViewModel = null,
+        rememberNavController()
+    )
 }

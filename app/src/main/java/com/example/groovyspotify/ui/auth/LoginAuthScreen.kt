@@ -1,6 +1,7 @@
 package com.example.groovyspotify.ui.auth
 
 import android.app.Activity.RESULT_OK
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,11 +37,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.example.groovyspotify.model.firestore.UserProfile
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import font.helveticaFamily
 
 
 @Composable
-fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
+fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreViewModel?,navController: NavController?) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var rememberMe by remember { mutableStateOf(false) }
@@ -256,9 +260,23 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                 // Login button
                 Button(
                     onClick = {
-
-                        viewModel?.login(email = email, password = password)
-//                        navController?.navigate("ProfileScreenLanguage")
+//                        val firestore = FirebaseFirestore.getInstance()
+//                        viewModel?.login(email = email, password = password)
+//                        val userProfileTest = UserProfile(
+//                            userName = "test1",
+//                            name = "Test1",
+//                            email = "test1@gmail.com",
+//                            phone = "09182436",
+//                            profilePhotoUri = Uri.EMPTY,
+//                            favoriteArtists = listOf("Justin Bieber","DSP","Selena"),
+//                            featuredAudio = "Paata",
+//                            myLanguages = listOf("Telugu","Hindi","English")
+//
+//                        )
+//                        firestore.collection("UserProfiles")
+//                            .document("test1")
+//                            .set(userProfileTest)
+                        navController?.navigate("ProfileScreenLanguage")
 
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
@@ -407,7 +425,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                 when (it) {
                     is Resource.Failure -> {
                         val context = LocalContext.current
-                        Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
                     }
 
                     Resource.Loading -> {
@@ -416,8 +434,8 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
 
                     is Resource.Success -> {
                         LaunchedEffect(Unit) {
-                            navController?.navigate("HomeScreen") {
-                                popUpTo("HomeScreen") {
+                            navController?.navigate("ProfileScreenLanguage") {
+                                popUpTo("LoginAuthScreen") {
                                     inclusive = true
                                 }
                             }
@@ -432,7 +450,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
                 when (it) {
                     is Resource.Failure -> {
                         val context = LocalContext.current
-                        Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
                     }
 
                     Resource.Loading -> {
@@ -441,8 +459,8 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
 
                     is Resource.Success -> {
                         LaunchedEffect(Unit) {
-                            navController?.navigate("HomeScreen") {
-                                popUpTo("HomeScreen") {
+                            navController?.navigate("ProfileScreenLanguage") {
+                                popUpTo("LoginAuthScreen") {
                                     inclusive = true
                                 }
                             }
@@ -460,5 +478,5 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, navController: NavController?) {
 @Preview
 @Composable
 fun PhoneAuthPreview() {
-    LoginAuthScreen(null, rememberNavController())
+    LoginAuthScreen(null, firestoreViewModel = null,rememberNavController())
 }
