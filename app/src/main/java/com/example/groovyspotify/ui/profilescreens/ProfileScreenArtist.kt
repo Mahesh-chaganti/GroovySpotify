@@ -192,6 +192,7 @@ fun ProfileScreenArtist(spotifyApiViewModel: SpotifyApiViewModel?, firestoreView
                 )
                 val mapData = mapOf(
                     "favoriteArtists" to favoriteArtists)
+                firestoreViewModel!!.updateMyFavArtists(favoriteArtists)
                 scope.launch {
                     firestoreViewModel?.updateUserProfile(
                         userName = firestoreViewModel?.myUsername!!,

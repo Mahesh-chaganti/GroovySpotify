@@ -1,7 +1,6 @@
 package com.example.groovyspotify.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -11,30 +10,23 @@ import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
 import com.example.groovyspotify.model.swipeablescreens.SwipeableScreens
+import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainHomeScreen(listOfSwipeableScreens: List<SwipeableScreens>?, navController: NavController) {
+fun MainHomeScreen(firestoreViewModel: FirestoreViewModel?,listOfSwipeableScreens: List<SwipeableScreens>?, navController: NavController) {
     // This scope is necessary to change the tab using animation
     val scope = rememberCoroutineScope()
     // I'm using a list of images here
@@ -72,11 +64,20 @@ fun MainHomeScreen(listOfSwipeableScreens: List<SwipeableScreens>?, navControlle
         },
     ) {
         HorizontalPager(
-            modifier = Modifier.fillMaxSize().padding(it),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it),
             state = pageState,
            pageCount = listOfSwipeableScreens!!.size
         ) { page ->
            listOfSwipeableScreens[page].content()
+            val scope = rememberCoroutineScope()
+            LaunchedEffect(key1 = null) {
+                scope.launch {
+
+                    firestoreViewModel?.getUserProfile()
+                }
+            }
         }
     }
 }
@@ -86,5 +87,5 @@ fun MainHomeScreen(listOfSwipeableScreens: List<SwipeableScreens>?, navControlle
 @Preview
 @Composable
 fun PreviewBottomNavigationWithSwipeableScreens() {
-   MainHomeScreen(null,rememberNavController())
+   MainHomeScreen(null,null,rememberNavController())
 }

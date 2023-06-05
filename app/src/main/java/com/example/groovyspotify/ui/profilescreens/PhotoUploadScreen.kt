@@ -166,7 +166,7 @@ fun PhotoUploadScreen(firestoreViewModel: FirestoreViewModel?,navController: Nav
 
                             }
                         }
-                        navController.navigate("HomeScreen")
+                        navController.navigate("MainHomeScreen")
 
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),

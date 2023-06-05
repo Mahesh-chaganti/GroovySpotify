@@ -148,7 +148,7 @@ fun ProfileScreenLanguage(
                     val mapData = mapOf(
                         "myLanguages" to myLanguages
                     )
-                    firestoreViewModel?.updateMyUsername(userName = "test1")
+
                     firestoreViewModel?.updateUserProfile(userName = firestoreViewModel.myUsername!!, mapData = mapData)
                 }
 

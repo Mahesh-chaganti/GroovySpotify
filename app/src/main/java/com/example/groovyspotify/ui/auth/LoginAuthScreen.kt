@@ -276,6 +276,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
 //                        firestore.collection("UserProfiles")
 //                            .document("test1")
 //                            .set(userProfileTest)
+                        firestoreViewModel?.updateMyUsername(userName = "test1")
                         navController?.navigate("ProfileScreenLanguage")
 
                     },
@@ -434,7 +435,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
 
                     is Resource.Success -> {
                         LaunchedEffect(Unit) {
-                            navController?.navigate("ProfileScreenLanguage") {
+                            navController?.navigate("MainHomeScreen") {
                                 popUpTo("LoginAuthScreen") {
                                     inclusive = true
                                 }

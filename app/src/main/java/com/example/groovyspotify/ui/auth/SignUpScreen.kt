@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewModel?, navController: NavController?) {
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var userName by remember { mutableStateOf("") }
@@ -94,6 +95,38 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
+                        value = name,
+                        onValueChange = { name = it },
+                        label = {
+                            Text(
+                                text = "Name",
+                                fontSize = 18.sp,
+                                fontFamily = helveticaFamily,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Text
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Color.White,
+                            textColor = Color.White,
+                            backgroundColor = Color.DarkGray,
+                            focusedBorderColor = Color(0xFF0890CD),
+                            unfocusedBorderColor = Color.White,
+                            disabledTextColor = Color.White,
+                            focusedLabelColor = Color(0xFF0890CD),
+                            placeholderColor = Color.White
+
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
                         value = userName,
                         onValueChange = { userName = it },
                         label = {
@@ -154,6 +187,7 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
+
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = email,
@@ -275,14 +309,20 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                             "email" to email,
                             "phone" to phone,
                             "userName" to userName,
+                            "name" to name,
+                            "profilePhotoUrl" to "",
+                            "favoriteArtists" to listOf(""),
+                            "featuredAudio" to "",
+                            "myLanguages" to listOf("")
                         )
-//                        navController?.navigate("LoginAuthScreen")
                         // SignUp
-                        viewModel?.signup(userName, email, password)
+                        viewModel?.signup(name, email, password)
                         firestoreViewModel?.updateMyUsername(userName = userName)
                         scope.launch{
-                            firestoreViewModel?.updateUserProfile(userName = userName, mapData = mapData)
+                            firestoreViewModel?.createUserProfile(userName = userName, mapData = mapData)
                         }
+                        firestoreViewModel?.updateMyUsername(userName = userName)
+                        navController?.navigate("ProfileScreenLanguage")
 
 
                     },

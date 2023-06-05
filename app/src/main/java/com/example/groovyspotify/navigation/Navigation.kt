@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.example.groovyspotify.model.swipeablescreens.SwipeableScreens
-//import com.example.groovyspotify.ui.home.HomeScreen
 import com.example.groovyspotify.ui.auth.LoginAuthScreen
 import com.example.groovyspotify.ui.auth.SignUpScreen
 import com.example.groovyspotify.ui.auth.AuthViewModel
@@ -65,7 +64,7 @@ fun NavigationScreen(
         SwipeableScreens(
             "Discover", Icons.Filled.List, content = {
                 HomeScreen(
-
+                    firestoreViewModel = firestoreViewModel
                 )
             }
         ),
@@ -123,7 +122,7 @@ fun NavigationScreen(
                     else -> null
                 }
             }
-        ) { MainHomeScreen(listOfSwipeableScreens = listOfSwipeableScreens,navController) }
+        ) { MainHomeScreen(firestoreViewModel = firestoreViewModel,listOfSwipeableScreens = listOfSwipeableScreens, navController = navController) }
         composable(
             "LoginAuthScreen",
             enterTransition = {
