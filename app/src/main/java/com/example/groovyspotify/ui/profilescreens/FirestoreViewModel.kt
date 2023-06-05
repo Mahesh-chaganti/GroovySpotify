@@ -66,7 +66,7 @@ class FirestoreViewModel @Inject constructor() : ViewModel() {
                     .addOnSuccessListener { uri ->
 
                       _downloadUrlFlow.value = uri.toString()
-                        
+
                     }
                     .addOnFailureListener { exception ->
                         Log.d("Firestoreviewmodel", "uploadImageToStorage: ")

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import font.helveticaFamily
 
 @Composable
-fun HomeScreen() {
+fun FriendsScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -28,7 +28,7 @@ fun HomeScreen() {
     {
         Text(
             modifier = Modifier.align(Alignment.TopCenter).padding(vertical = 128.dp),
-            text = "Discover",
+            text = "Friends",
             fontSize = 36.sp,
             fontFamily = helveticaFamily,
             fontStyle = FontStyle.Normal,
