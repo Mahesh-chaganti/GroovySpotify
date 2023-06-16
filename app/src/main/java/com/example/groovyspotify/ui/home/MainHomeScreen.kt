@@ -1,5 +1,6 @@
 package com.example.groovyspotify.ui.home
 
+import android.util.Base64
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,21 +20,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.groovyspotify.R
+import com.example.groovyspotify.data.utils.SpotifyConstant
 import com.example.groovyspotify.model.swipeablescreens.SwipeableScreens
+import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
+import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MainHomeScreen(firestoreViewModel: FirestoreViewModel?,listOfSwipeableScreens: List<SwipeableScreens>?, navController: NavController) {
+fun MainHomeScreen(
+    viewModel: AuthViewModel?,
+    firestoreViewModel: FirestoreViewModel?,
+    spotifyApiViewModel: SpotifyApiViewModel?,
+    listOfSwipeableScreens: List<SwipeableScreens>?,
+    navController: NavController
+) {
     // This scope is necessary to change the tab using animation
     val scope = rememberCoroutineScope()
     // I'm using a list of images here
 
     // This page state will be used by BottomAppbar and HorizontalPager
-    val pageState = rememberPagerState( listOfSwipeableScreens!!.size /2)
+    val pageState = rememberPagerState(listOfSwipeableScreens!!.size / 2)
     val scaffoldState = rememberScaffoldState()
+    val clientId = SpotifyConstant.clientId // Your client id
+    val clientSecret = SpotifyConstant.clientSecret// Your secret
+    val authHeader =
+        "Basic " + Base64.encodeToString("$clientId:$clientSecret".toByteArray(), Base64.NO_WRAP)
     Scaffold(
         scaffoldState = scaffoldState,
         bottomBar = {
@@ -43,7 +56,8 @@ fun MainHomeScreen(firestoreViewModel: FirestoreViewModel?,listOfSwipeableScreen
                     listOfSwipeableScreens?.forEachIndexed { i, page ->
                         BottomNavigationItem(
                             icon = {
-                                Icon(imageVector = page.icon, "Page $i") },
+                                Icon(imageVector = page.icon, "Page $i")
+                            },
                             // here's the trick. the selected tab is based
                             // on HorizontalPager state.
                             selected = i == pageState.currentPage,
@@ -68,14 +82,18 @@ fun MainHomeScreen(firestoreViewModel: FirestoreViewModel?,listOfSwipeableScreen
                 .fillMaxSize()
                 .padding(it),
             state = pageState,
-           pageCount = listOfSwipeableScreens!!.size
+            pageCount = listOfSwipeableScreens!!.size
         ) { page ->
-           listOfSwipeableScreens[page].content()
+            listOfSwipeableScreens[page].content()
             val scope = rememberCoroutineScope()
             LaunchedEffect(key1 = null) {
                 scope.launch {
 
-                    firestoreViewModel?.getUserProfile()
+
+                    viewModel?.currentUser!!.email?.let { firestoreViewModel?.getMyUserProfile(it) }
+                    firestoreViewModel?.getAllOtherUserProfiles()
+                    spotifyApiViewModel?.getAccessToken(authHeader)
+
                 }
             }
         }
@@ -83,9 +101,8 @@ fun MainHomeScreen(firestoreViewModel: FirestoreViewModel?,listOfSwipeableScreen
 }
 
 
-
 @Preview
 @Composable
 fun PreviewBottomNavigationWithSwipeableScreens() {
-   MainHomeScreen(null,null,rememberNavController())
+    MainHomeScreen(null, null, null, null,rememberNavController())
 }

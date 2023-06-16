@@ -37,6 +37,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,16 +65,37 @@ import com.example.groovyspotify.model.spotifyapidata.playlist.Playlist
 import com.example.groovyspotify.model.spotifyapidata.track.Album
 import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
+import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import font.helveticaFamily
 
 @Composable
 fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminationViewModel: NavEliminationViewModel?, navController: NavController) {
 
-    var search by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf("") }
     val tapState = spotifyApiViewModel?.tapState!!.collectAsState()
+    val accessTokenState = spotifyApiViewModel?.accessTokenResponse?.collectAsState()
+    var accessToken by remember { mutableStateOf("") }
 
+    accessTokenState?.value.let {
+        when (it) {
+            is Resource.Failure -> {
+                val context = LocalContext.current
+                Toast.makeText(context, it.exception.message + "Token", Toast.LENGTH_LONG).show()
+            }
 
+            Resource.Loading -> {
+                CircularDotsAnimation()
+            }
+
+            is Resource.Success -> {
+
+                accessToken = it.data.accessToken
+            }
+
+            else -> {}
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -115,8 +137,17 @@ fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminatio
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 OutlinedTextField(
-                    value = search,
-                    onValueChange = { search = it },
+                    value = searchQuery,
+                    onValueChange = { newQuery ->
+                        searchQuery = newQuery
+                        spotifyApiViewModel!!.getSearchTAPData(
+                            query = searchQuery,
+                            type = "album,track,playlist",
+                            limit = 10,
+                            market = "IN",
+                            authorization = "Bearer $accessToken"
+                        )
+                    },
                     label = {
                         Text(
                             text = "Search for a song",
@@ -163,7 +194,7 @@ fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminatio
                     }
 
                     Resource.Loading -> {
-                        CircularProgressIndicator()
+                        CircularDotsAnimation()
                     }
 
                     is Resource.Success -> {
@@ -176,7 +207,7 @@ fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminatio
 
                             LazyColumn() {
                                 itemsIndexed(it.data.tracks.items) { index, item ->
-                                    TrackRow(navEliminationViewModel = navEliminationViewModel!!,track = item, navController = navController)
+                                    TrackRow(track = item, navController = navController)
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
                                 itemsIndexed(it.data.albums.items) { index, item ->
@@ -296,11 +327,13 @@ fun PlaylistRow(playlist: Playlist) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TrackRow(navEliminationViewModel: NavEliminationViewModel,track: TrackResponse, navController: NavController) {
-    Box(modifier = Modifier.padding(start = 18.dp).clickable {
-            navEliminationViewModel.setTrackData(data = track)
-        navController.navigate("ExoPlayerImpl")
-    }) {
+fun TrackRow(track: TrackResponse, navController: NavController) {
+    Box(modifier = Modifier
+        .padding(start = 18.dp)
+        .clickable {
+
+            navController.navigate("ExoPlayerImpl")
+        }) {
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.Top

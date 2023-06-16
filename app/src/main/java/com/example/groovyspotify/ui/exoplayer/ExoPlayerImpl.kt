@@ -1,5 +1,6 @@
 package com.example.groovyspotify.ui.exoplayer
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,7 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,11 +53,19 @@ import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import font.helveticaFamily
 import kotlinx.coroutines.launch
 
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.example.groovyspotify.data.utils.Resource
+import com.example.groovyspotify.ui.home.CircularDotsAnimation
 
 @Composable
 fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, firestoreViewModel: FirestoreViewModel,navController: NavController) {
     val context = LocalContext.current
     val myData = navEliminationViewModel.myData
+    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
@@ -121,41 +130,58 @@ fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, firestoreVie
         )
     }
 
+    Box(
+        modifier = Modifier
+            .background(Color.Black)
+            .fillMaxSize()
+    ) {
 
 
-    PlayerControls(
-        modifier = Modifier.fillMaxSize(),
-        isPlaying = { isPlaying },
-        onPauseToggle = {
-            when {
-                exoPlayer.isPlaying -> {
-                    // pause the video
-                    exoPlayer.pause()
+        CenterControls(
+            modifier = Modifier.fillMaxSize(),
+
+            isPlaying = {isPlaying},
+
+            onPauseToggle = {
+                when {
+                    exoPlayer.isPlaying -> {
+                        // pause the video
+                        exoPlayer.pause()
 
 
+                    }
+
+                    exoPlayer.isPlaying.not() &&
+                            playbackState == Player.STATE_ENDED -> {
+                        exoPlayer.seekTo(0)
+                        exoPlayer.playWhenReady = true
+                    }
+
+                    else -> {
+                        // play the video
+                        // it's already paused
+                        exoPlayer.play()
+
+                    }
                 }
+                isPlaying = isPlaying.not()
+            },
+            playbackState = {playbackState},
+            title = { exoPlayer.mediaMetadata.displayTitle.toString() },
+            track = myData!!,
+            navController = navController,
+            firestoreViewModel = firestoreViewModel,
+            navEliminationViewModel = navEliminationViewModel
+        )
 
-                exoPlayer.isPlaying.not() &&
-                        playbackState == Player.STATE_ENDED -> {
-                    exoPlayer.seekTo(0)
-                    exoPlayer.playWhenReady = true
-                }
 
-                else -> {
-                    // play the video
-                    // it's already paused
-                    exoPlayer.play()
+    }
 
-                }
-            }
-            isPlaying = isPlaying.not()
-        },
-        title = { exoPlayer.mediaMetadata.displayTitle.toString() },
-        playbackState = { playbackState },
-        track = myData!!,
-        navController = navController,
-        firestoreViewModel = firestoreViewModel
-    )
+
+
+
+
+
 
 
 }
@@ -170,13 +196,20 @@ fun CenterControls(
     title: () -> String,
     track: TrackResponse?,
     navController: NavController?,
-    firestoreViewModel: FirestoreViewModel?
+    firestoreViewModel: FirestoreViewModel?,
+    navEliminationViewModel: NavEliminationViewModel?
 ) {
+    var userName by remember {
+        mutableStateOf("")
+    }
     var isVideoPlaying = remember(isPlaying()) { isPlaying() }
 
     var title = remember(title()) { title() }
     var playerState by remember { mutableStateOf(playbackState()) }
     var featuredAudio by remember { mutableStateOf("") }
+    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
+    var profilePhotoUrlEmpty by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -286,13 +319,19 @@ fun CenterControls(
                     val mapData = mapOf(
                         "featuredAudio" to featuredAudio)
                     scope.launch {
+                        navEliminationViewModel?.selectedFeaturedAudio(data = track)
 
                         firestoreViewModel?.updateUserProfile(
-                            userName = firestoreViewModel?.myUsername!!,
+                            userName = userName,
                             mapData = mapData
                         )
                     }
-                    navController?.navigate("PhotoUploadScreen")
+                    if(profilePhotoUrlEmpty) {
+                        navController?.navigate("PhotoUploadScreen")
+                    }
+                    else{
+                        navController?.navigate("MainHomeScreen")
+                    }
                 },
                 colors = ButtonDefaults
                     .buttonColors(
@@ -314,48 +353,30 @@ fun CenterControls(
             }
 
         }
+        myUserProfile?.value.let {
+            when (it) {
+                is Resource.Failure -> {
+                    val context = LocalContext.current
+                    Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
+                }
+
+                Resource.Loading -> {
+                    CircularDotsAnimation()
+                }
+
+                is Resource.Success -> {
+                    userName = it.data.userName
+                    if(it.data.profilePhotoUrl.isNullOrBlank()){
+                       profilePhotoUrlEmpty = true
+                    }
+
+                }
+
+                else -> {}
+            }
+        }
     }
 
-}
-
-
-@Composable
-fun PlayerControls(
-    modifier: Modifier = Modifier,
-
-    isPlaying: () -> Boolean,
-    title: () -> String,
-    playbackState: () -> Int,
-    onPauseToggle: () -> Unit,
-    track: TrackResponse,
-    navController: NavController?,
-    firestoreViewModel: FirestoreViewModel
-) {
-    //black overlay across the video player
-
-
-    Box(
-        modifier = Modifier
-            .background(Color.Black)
-            .fillMaxSize()
-    ) {
-
-
-        CenterControls(
-            modifier = Modifier.fillMaxSize(),
-
-            isPlaying = isPlaying,
-
-            onPauseToggle = onPauseToggle,
-            playbackState = playbackState,
-            title = title,
-            track = track,
-            navController = navController,
-            firestoreViewModel = firestoreViewModel
-        )
-
-
-    }
 }
 
 @Preview
@@ -368,6 +389,7 @@ fun CentralControlsPreview() {
         title = { "" },
         track = null,
         navController = null,
-        firestoreViewModel = null
+        firestoreViewModel = null,
+        navEliminationViewModel = null
     )
 }

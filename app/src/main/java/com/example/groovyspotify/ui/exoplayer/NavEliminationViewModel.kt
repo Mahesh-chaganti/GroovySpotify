@@ -15,4 +15,7 @@ class NavEliminationViewModel @Inject constructor(): ViewModel(){
     fun setTrackData(data: TrackResponse) {
         myData = data
     }
+    fun selectedFeaturedAudio(data: TrackResponse){
+        myData = data
+    }
 }

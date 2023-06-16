@@ -10,7 +10,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -26,7 +25,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.R
 import com.example.groovyspotify.data.utils.Resource
-import com.example.groovyspotify.model.firestore.UserProfile
+import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import font.helveticaFamily
 import kotlinx.coroutines.launch
@@ -44,6 +43,9 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var signupFlow = viewModel?.signupFlow?.collectAsState()
+    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
+
+    var showLoading by remember{ mutableStateOf(false) }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -68,7 +70,8 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                 modifier= Modifier
                     .align(Alignment.TopStart)
                     .padding(18.dp)
-                    .size(24.dp),
+                    .size(24.dp)
+                    .clickable { navController?.popBackStack() },
                 painter = painterResource(id = R.drawable.round_arrow_back_ios_24),
                 contentDescription ="Back button",
                 tint = Color(0xFFFF5722)
@@ -317,12 +320,13 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                         )
                         // SignUp
                         viewModel?.signup(name, email, password)
-                        firestoreViewModel?.updateMyUsername(userName = userName)
                         scope.launch{
                             firestoreViewModel?.createUserProfile(userName = userName, mapData = mapData)
+                           firestoreViewModel?.getMyUserProfile(email = email)
                         }
-                        firestoreViewModel?.updateMyUsername(userName = userName)
-                        navController?.navigate("ProfileScreenLanguage")
+
+
+
 
 
                     },
@@ -357,6 +361,27 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                         }
 
                 )
+                myUserProfile?.value?.let {
+                    when (it) {
+                        is Resource.Failure -> {
+                            val context = LocalContext.current
+                            Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                        }
+
+                        Resource.Loading -> {
+                            CircularDotsAnimation()
+                        }
+
+                        is Resource.Success -> {
+                            LaunchedEffect(Unit){
+                                navController?.navigate("ProfileScreenLanguage")
+                            }
+
+
+                        }
+                    }
+                }
+
                 signupFlow?.value?.let {
                     when (it) {
                         is Resource.Failure -> {
@@ -365,15 +390,15 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
                         }
 
                         Resource.Loading -> {
-                            CircularProgressIndicator()
+                           CircularDotsAnimation()
                         }
 
                         is Resource.Success -> {
-                            LaunchedEffect(Unit) {
-                                navController?.navigate("LoginAuthScreen") {
-                                    popUpTo("SignUpScreen") { inclusive = true }
-                                }
-                            }
+//                            LaunchedEffect(Unit) {
+//                                navController?.navigate("LoginAuthScreen") {
+//                                    popUpTo("SignUpScreen") { inclusive = true }
+//                                }
+//                            }
                         }
                     }
                 }
@@ -381,6 +406,7 @@ fun SignUpScreen(viewModel: AuthViewModel?,firestoreViewModel: FirestoreViewMode
 
         }
     }
+
 }
 
 @Preview

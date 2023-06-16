@@ -11,7 +11,7 @@ data class UserProfile(
     val userName: String = "",
     val email: String = "",
     val profilePhotoUrl: String = "",
-    val myLanguages: List<String?> = listOf(""),
-    val favoriteArtists: List<String?> = listOf(""),
+    var myLanguages: List<String> = listOf(),
+    val favoriteArtists: List<String> = listOf(),
     val featuredAudio: String = ""
 )

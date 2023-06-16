@@ -2,6 +2,7 @@ package com.example.groovyspotify.ui.profilescreens
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -27,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,11 +39,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.groovyspotify.R
+import com.example.groovyspotify.data.utils.Resource
+import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import font.helveticaFamily
 import kotlinx.coroutines.launch
 
 @Composable
 fun PhotoUploadScreen(firestoreViewModel: FirestoreViewModel?,navController: NavController) {
+    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
+    var userName by remember{mutableStateOf("")}
     var selectedImageUri by remember {
         mutableStateOf<Uri?>(null)
     }
@@ -127,7 +133,8 @@ fun PhotoUploadScreen(firestoreViewModel: FirestoreViewModel?,navController: Nav
 
                                 firestoreViewModel?.uploadImageToStorage(
                                     imageUri = selectedImageUri!!,
-                                    fileName = firestoreViewModel?.myUsername + ": ProfilePhoto",
+                                    fileName = "$userName: ProfilePhoto",
+
                                 )
 
 
@@ -156,11 +163,13 @@ fun PhotoUploadScreen(firestoreViewModel: FirestoreViewModel?,navController: Nav
                             if (downloadUrlFlow?.value != null) {
                                 Log.d("DownloadUrl", "PhotoUploadScreen: ${downloadUrlFlow.value}")
 
+
                                 val mapData = mapOf(
                                     "profilePhotoUrl" to downloadUrlFlow.value
                                 )
+
                                 firestoreViewModel?.updateUserProfile(
-                                    userName = firestoreViewModel.myUsername!!,
+                                    userName = userName,
                                     mapData = mapData
                                 )
 
@@ -182,6 +191,25 @@ fun PhotoUploadScreen(firestoreViewModel: FirestoreViewModel?,navController: Nav
                         fontStyle = FontStyle.Normal,
                         fontWeight = FontWeight.Medium
                     )
+                }
+                myUserProfile?.value.let {
+                    when (it) {
+                        is Resource.Failure -> {
+                            val context = LocalContext.current
+                            Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
+                        }
+
+                        Resource.Loading -> {
+                            CircularDotsAnimation()
+                        }
+
+                        is Resource.Success -> {
+                            userName = it.data.userName
+
+                        }
+
+                        else -> {}
+                    }
                 }
 
             }

@@ -1,15 +1,24 @@
 package com.example.groovyspotify.ui.home
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -17,22 +26,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.groovyspotify.R
+import com.example.groovyspotify.data.utils.Resource
+import com.example.groovyspotify.model.firestore.Contact
+import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import font.helveticaFamily
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
 @Composable
-fun HomeScreen(firestoreViewModel: FirestoreViewModel) {
-    var mapOfProfiles = firestoreViewModel?.mapOfEachProfileArtists?.collectAsState()
-    var profileName by remember{ mutableStateOf("") }
+fun HomeScreen(navController: NavController,firestoreViewModel: FirestoreViewModel) {
+    var filteredUserProfiles by remember{ mutableStateOf(ArrayList<UserProfile>()) }
+    var listOfProfiles = firestoreViewModel?.listOfRecommendedProfiles?.collectAsState()
+    var profileName by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-
-    Log.d("userflow", "HomeScreen: $mapOfProfiles")
+    val myUserProfile = firestoreViewModel.myUserProfile.collectAsState()
+    Log.d("userflow", "HomeScreen: $listOfProfiles")
+    var filteredUsernames : Map<String, Double> = mapOf()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -42,6 +62,7 @@ fun HomeScreen(firestoreViewModel: FirestoreViewModel) {
             )
     )
     {
+
         Text(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -54,72 +75,149 @@ fun HomeScreen(firestoreViewModel: FirestoreViewModel) {
             color = Color.White
         )
 
-        Text(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(vertical = 128.dp),
-            text = profileName,
-            fontSize = 36.sp,
-            fontFamily = helveticaFamily,
-            fontStyle = FontStyle.Normal,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color.White
-        )
-        Button(modifier = Modifier.align(Alignment.BottomCenter),
-            onClick = {
-                mapOfProfiles!!.value!!.let {
+        Box(modifier = Modifier
+            .align(Alignment.Center)
+            .fillMaxSize())
+        {
 
-                    it.forEach {
 
-                        it.forEach {
-                            var max = Double.MIN_VALUE
-                            var maxKey = ""
-                            var similarityValue = calculateJaccardSimilarity(
-                                firestoreViewModel.favoriteArtists,
-                                it.value
-                            )
-                            val mapOfUsers = mutableMapOf<String, Double>()
-                            mapOfUsers[it.key] = similarityValue
-                            for ((key, value) in mapOfUsers) {
-                                if (value > max) {
-                                    max = value
-                                    maxKey = key
-                                }
-                            }
-                            profileName = maxKey
-                            Log.d("Similar", "HomeScreen: $mapOfUsers")
+            if (listOfProfiles?.value != null) {
 
-//                            if (similarityValue > max) {
-//                                max = similarityValue
-//                                profileName = it.key
-//
-//
-//                            }
+                listOfProfiles?.value!!.let {
+                    when (it) {
+                        is Resource.Failure -> {
+                            val context = LocalContext.current
+                            Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
                         }
-                    }
-                }
-        }) {
-            Text(
-                modifier = Modifier
 
-                    .padding(vertical = 28.dp),
-                text = "Surprise me",
-                fontSize = 36.sp,
-                fontFamily = helveticaFamily,
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White
-            )
+                        Resource.Loading -> {
+                            CircularDotsAnimation()
+                        }
+
+                        is Resource.Success -> {
+
+
+                                val mapOfProfileSimilarities = mutableMapOf<String, Double>()
+                                it.data!!.forEach {
+
+                                    myUserProfile?.value.let { mine->
+                                        when (mine) {
+                                            is Resource.Failure -> {
+                                                val context = LocalContext.current
+                                                Toast.makeText(context, mine.exception.message, Toast.LENGTH_SHORT).show()
+                                            }
+
+                                            Resource.Loading -> {
+                                                CircularDotsAnimation()
+                                            }
+
+                                            is Resource.Success -> {
+                                                val similarityValue = calculateJaccardSimilarity(
+                                                    mine.data.favoriteArtists,
+                                                    it.favoriteArtists as List<String>
+                                                )
+                                                mapOfProfileSimilarities[it.userName] = similarityValue
+                                                Log.d("userSuggestedMapSimilar", "HomeScreen: $mapOfProfileSimilarities")
+
+                                               filteredUsernames =
+                                                    mapOfProfileSimilarities.filterValues { value -> value > 0.4 }
+                                                Log.d("userSuggestedNames", "HomeScreen: $filteredUsernames")
+
+
+
+                                            }
+                                            else -> {}
+                                            }
+
+
+
+                                        }
+
+                                    }
+
+
+
+                            }
+
+
+
+                    }
+
+                }
+
+            }
+            listOfProfiles?.value.let {
+                when (it) {
+                    is Resource.Failure -> {
+                        val context = LocalContext.current
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_LONG).show()
+                    }
+
+                    Resource.Loading -> {
+                        CircularDotsAnimation()
+                    }
+
+                    is Resource.Success -> {
+                        filteredUserProfiles = it.data.filter { userProfile ->
+                            val username = userProfile.userName
+                            filteredUsernames.containsKey(username)
+                        } as ArrayList<UserProfile>
+                        UserProfileList(userProfiles = filteredUserProfiles)
+                        Log.d("userSuggested", "HomeScreen: $filteredUserProfiles")
+                    }
+
+                    else -> {}
+                }
+            }
+
+//            else {
+//                navController.navigate("LoginAuthScreen")
+//            }
         }
     }
-
-
-
-
+    Log.d("userSuggested2", "HomeScreen: $filteredUserProfiles")
 
 }
 
+@Composable
+fun UserProfileList(userProfiles: List<UserProfile>) {
+    var clickedProfile by remember {
+        mutableStateOf(false)
+    }
+    var userProfileInside by remember {
+        mutableStateOf(UserProfile())
+    }
+    if (!clickedProfile) {
+        LazyColumn {
+            itemsIndexed(userProfiles) { index: Int, item: UserProfile ->
+
+
+                ReUsableProfileCard(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable {
+                            clickedProfile = !clickedProfile
+                        },
+                    userProfile = item, isHomeScreen = true, navController = null
+                )
+
+           userProfileInside = item
+        }
+        }
+    }
+    else{
+        ProfileCard(userProfile = userProfileInside , navController = null, isHomeScreen = true )
+    }
+}
+
+
+
+
+
 fun calculateJaccardSimilarity(listA: List<String>, listB: List<String>): Double {
+
+
+
     val setA = listA.toSet()
     val setB = listB.toSet()
 
@@ -127,17 +225,6 @@ fun calculateJaccardSimilarity(listA: List<String>, listB: List<String>): Double
     val unionSize = setA.union(setB).size
 
     return intersectionSize.toDouble() / unionSize.toDouble()
-}
-
-//val userALanguages = listOf("Telugu", "Hindi", "English")
-//val userAartists = listOf("Selena", "Justin", "Ava", "Maroon 5", "DSP")
-//
-//val userBLanguages = listOf("Telugu", "English", "Tamil")
-//val userBartists = listOf("Justin", "Maroon 5", "Taylor Swift")
-//
-//val languageSimilarity = calculateJaccardSimilarity(userALanguages, userBLanguages)
-//val artistSimilarity = calculateJaccardSimilarity(userAartists, userBartists)
-
-fun similarValues(mapOfUsers :MutableMap<String, Double>){
 
 }
+

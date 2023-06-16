@@ -1,7 +1,6 @@
 package com.example.groovyspotify.ui.auth
 
 import android.app.Activity.RESULT_OK
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -13,11 +12,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,9 +34,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import com.example.groovyspotify.model.firestore.UserProfile
+import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
-import com.google.firebase.firestore.FirebaseFirestore
 import font.helveticaFamily
 
 
@@ -54,6 +50,8 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
 
     var googleSignInFlow = viewModel?.googleState?.collectAsState()
     val scope = rememberCoroutineScope()
+    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
+    var languagesEmpty by remember { mutableStateOf(false) }
 
 //    LaunchedEffect(key1 = Unit) {
 //        if(viewModel?.currentUser!= null) {
@@ -260,24 +258,16 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
                 // Login button
                 Button(
                     onClick = {
-//                        val firestore = FirebaseFirestore.getInstance()
-//                        viewModel?.login(email = email, password = password)
-//                        val userProfileTest = UserProfile(
-//                            userName = "test1",
-//                            name = "Test1",
-//                            email = "test1@gmail.com",
-//                            phone = "09182436",
-//                            profilePhotoUri = Uri.EMPTY,
-//                            favoriteArtists = listOf("Justin Bieber","DSP","Selena"),
-//                            featuredAudio = "Paata",
-//                            myLanguages = listOf("Telugu","Hindi","English")
-//
-//                        )
-//                        firestore.collection("UserProfiles")
-//                            .document("test1")
-//                            .set(userProfileTest)
-                        firestoreViewModel?.updateMyUsername(userName = "test1")
-                        navController?.navigate("ProfileScreenLanguage")
+                        viewModel?.login(email = email, password = password)
+                        scope.launch { firestoreViewModel?.getMyUserProfile(email = email) }
+
+                        Log.d("Maadel", "updateMyUserProfile: $myUserProfile.value")
+                        if(languagesEmpty) {
+                            navController?.navigate("ProfileScreenLanguage")
+                        }
+                        else{
+                            navController?.navigate("MainHomeScreen")
+                        }
 
                     },
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
@@ -430,16 +420,16 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
                     }
 
                     Resource.Loading -> {
-                        CircularProgressIndicator()
+                        CircularDotsAnimation()
                     }
 
                     is Resource.Success -> {
                         LaunchedEffect(Unit) {
-                            navController?.navigate("MainHomeScreen") {
-                                popUpTo("LoginAuthScreen") {
-                                    inclusive = true
-                                }
-                            }
+//                            navController?.navigate("MainHomeScreen") {
+//                                popUpTo("LoginAuthScreen") {
+//                                    inclusive = true
+//                                }
+//                            }
                         }
                     }
 
@@ -455,7 +445,7 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
                     }
 
                     Resource.Loading -> {
-                        CircularProgressIndicator()
+                       CircularDotsAnimation()
                     }
 
                     is Resource.Success -> {
@@ -471,10 +461,31 @@ fun LoginAuthScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreView
                     else -> {}
                 }
             }
+            myUserProfile?.value.let {
+                when (it) {
+                    is Resource.Failure -> {
+                        val context = LocalContext.current
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
+                    }
+
+                    Resource.Loading -> {
+                        CircularDotsAnimation()
+                    }
+
+                    is Resource.Success -> {
+                        if(it.data.myLanguages.isEmpty()){
+                            languagesEmpty = true
+                        }
+                    }
+
+                    else -> {}
+                }
+                    }
+            }
 
         }
     }
-}
+
 
 @Preview
 @Composable

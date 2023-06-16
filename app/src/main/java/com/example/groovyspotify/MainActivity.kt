@@ -4,12 +4,15 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -28,6 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import com.example.groovyspotify.navigation.NavigationScreen
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
+import com.example.groovyspotify.ui.profilescreens.loadContacts
 //import com.example.groovyspotify.ui.profilescreens.loadImageFromUri
 //import com.example.groovyspotify.ui.profilescreens.openGallery
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
@@ -48,13 +52,37 @@ class MainActivity : ComponentActivity() {
             GroovySpotifyTheme {
                 // A surface container using the 'background' color from the theme
 
-                    NavigationScreen(viewModel = viewModel,spotifyAuthViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel)
+                val requestPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = { isGranted ->
+                        if (isGranted) {
+                            // Permission granted, perform contact synchronization
+                            loadContacts(context = this)
+                        }
+                    }
+                )
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.READ_CONTACTS
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Permission already granted
+                    // Call a function to use the contacts
+                    loadContacts(this)
+                } else {
+                    // Permission not granted, request it
+                    requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                }
+
+                NavigationScreen(viewModel = viewModel,spotifyApiViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel)
 
 
             }
-//            initializeActivityResults()
+
         }
+
     }
+
 
 
 //    override fun onRequestPermissionsResult(
@@ -102,10 +130,12 @@ class MainActivity : ComponentActivity() {
 //        ) == PackageManager.PERMISSION_GRANTED
 //    }
 //
-//    private fun requestReadContactsPermission(activity: ComponentActivity) {
+//    @RequiresApi(Build.VERSION_CODES.M)
+//    private fun requestPermission(activity: ComponentActivity) {
 //        activity.requestPermissions(
 //            arrayOf(Manifest.permission.READ_CONTACTS),
-//            REQUEST_CODE_PERMISSION
+//            READ_CONTACTS_PERMISSION_REQUEST
+//
 //        )
 //    }
 
