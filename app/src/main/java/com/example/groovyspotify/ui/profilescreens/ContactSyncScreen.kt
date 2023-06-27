@@ -26,12 +26,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
@@ -53,29 +55,121 @@ import com.example.groovyspotify.model.firestore.Contact
 import com.example.groovyspotify.model.firestore.MatchedContact
 import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.ui.auth.AuthViewModel
+import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import font.helveticaFamily
 import kotlinx.coroutines.launch
 
 @Composable
-fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreViewModel?) {
+fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreViewModel?,fcmViewModel: FCMViewModel) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val contacts = loadContacts(context = context)
+    var matchedContacts by remember { mutableStateOf(ArrayList<Contact>()) }
+    var matchedContactsAll = contacts.toSet().toList()
+    Log.d(
+        "Least no of contacts",
+        "ContactSyncScreen: ${matchedContactsAll.size} and $matchedContactsAll "
+    )
+    val listOfUsers = firestoreViewModel?.listOfRecommendedProfiles?.collectAsState()
+    Log.d("Users", "ContactSyncScreen: $listOfUsers")
 
+    listOfUsers?.value.let {
+        when (it) {
+            is Resource.Failure -> {
+
+            }
+
+            is Resource.Loading -> {
+                CircularDotsAnimation()
+            }
+
+            is Resource.Success -> {
+                try {
+                    it.data.forEachIndexed { index, item ->
+
+
+                        matchedContactsAll.forEach { contact ->
+                            if (contact.number?.contains(item.phone) == true) {
+                                if (matchedContacts.isEmpty()) {
+                                    matchedContacts.add(contact)
+                                    Log.d(
+                                        "Each Contact",
+                                        "ContactSyncScreen: ${item.name} and $contact"
+                                    )
+
+                                } else {
+                                    matchedContacts.forEach {
+                                        if (it.number?.contains(item.phone) == true) {
+
+                                        } else {
+                                            matchedContacts.add(contact)
+                                            Log.d(
+                                                "Each Contact",
+                                                "ContactSyncScreen: ${item.name} and $contact"
+                                            )
+                                        }
+                                    }
+                                }
+
+
+                            }
+                        }
+
+
+                    }
+                    Log.d("matching", "ContactSyncScreen: ${matchedContacts}")
+
+                } catch (e: Exception) {
+                    Log.d("Contact error", "ContactSyncScreen: $e")
+
+                }
+
+            }
+
+            else -> {}
+        }
+
+    }
+    if (matchedContacts.isNotEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            Log.d("matching", "ContactSyncScreen: ${matchedContacts.size}")
+
+            val matchingContacts = matchedContacts.toSet().toList()
+            FilteredContactList(filteredContacts = matchingContacts,fcmViewModel = fcmViewModel)
+            Log.d("matching", "ContactSyncScreen: ${matchingContacts.size}")
+
+        }
+    }
 }
 
 
-
 @Composable
-fun FilteredContactList( filteredContacts: List<Contact>) {
-
-
+fun FilteredContactList(filteredContacts: List<Contact>,fcmViewModel: FCMViewModel?) {
 
     if (filteredContacts.isNotEmpty()) {
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
+            item {
+                Text(
+                    modifier = Modifier.padding(top = 36.dp),
+                    text = "Friends",
+                    fontSize = 36.sp,
+                    fontFamily = helveticaFamily,
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
+            }
             items(filteredContacts) { contact ->
                 Row(
                     modifier = Modifier
@@ -88,47 +182,66 @@ fun FilteredContactList( filteredContacts: List<Contact>) {
 
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
+                            .height(60.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.SpaceEvenly
                     )
                     {
 
 
-                        Text(
-                            text = contact.name,
-                            fontSize = 18.sp,
-                            fontFamily = helveticaFamily,
-                            fontStyle = FontStyle.Normal,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
+                        contact.name?.let {
+                            Text(
+                                text = it,
+                                fontSize = 18.sp,
+                                fontFamily = helveticaFamily,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                        }
 
-                        Text(
-                            text = contact.number,
-                            fontSize = 18.sp,
-                            fontFamily = helveticaFamily,
-                            fontStyle = FontStyle.Normal,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
-                        )
+                        contact.number?.let {
+                            Text(
+                                text = it,
+                                fontSize = 18.sp,
+                                fontFamily = helveticaFamily,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = Color.White
+                            )
+                        }
                     }
 
 
-                    Button(onClick = {
+                    Button(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .padding(40.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        onClick = {
+                            fcmViewModel?.sendNotificationToUser(phone = "")
+                        },
+                        colors = ButtonDefaults
+                            .buttonColors(
 
-                    }) {
+                                backgroundColor = Color(0xFFFF3A20),
+                                contentColor = Color.White
+
+
+                            )
+                    ) {
                         Text(
                             text = "Add",
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
                             fontFamily = helveticaFamily,
                             fontStyle = FontStyle.Normal,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.White
+                            fontWeight = FontWeight.Medium
                         )
+
                     }
+
                 }
+                Divider(modifier = Modifier.height(2.dp))
             }
         }
 
@@ -136,8 +249,8 @@ fun FilteredContactList( filteredContacts: List<Contact>) {
 }
 
 
-fun loadContacts(context: Context): ArrayList<Contact> {
-    val contacts by mutableStateOf( ArrayList<Contact>())
+fun loadContacts(context: Context): List<Contact> {
+    val contacts = mutableListOf<Contact>()
 
     val cursor: Cursor? = context.contentResolver.query(
         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -159,9 +272,11 @@ fun loadContacts(context: Context): ArrayList<Contact> {
             contacts.add(contact)
         }
     }
+    Log.d("All Contacts", "loadContacts: ${contacts.size}")
 
     return contacts
 }
+
 private fun hasReadContactsPermission(context: Context): Boolean {
     return ContextCompat.checkSelfPermission(
         context,
@@ -172,5 +287,11 @@ private fun hasReadContactsPermission(context: Context): Boolean {
 @Preview
 @Composable
 fun ContactsSyncScreenPreview() {
-    ContactSyncScreen(null, null)
+    val dummyContacts = listOf(
+        Contact("Kohli", "12345"),
+        Contact("Kobe", "56789"),
+        Contact("Kyrie", "2468")
+    )
+
+    FilteredContactList(filteredContacts = dummyContacts, fcmViewModel = null)
 }

@@ -18,6 +18,7 @@ import com.example.groovyspotify.ui.auth.SignUpScreen
 import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.exoplayer.ExoplayerImpl
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
+import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.home.AccountInfoScreen
 import com.example.groovyspotify.ui.home.FriendsScreen
 import com.example.groovyspotify.ui.home.HomeScreen
@@ -41,7 +42,8 @@ fun NavigationScreen(
     viewModel: AuthViewModel,
     spotifyApiViewModel: SpotifyApiViewModel,
     navEliminationViewModel: NavEliminationViewModel,
-    firestoreViewModel: FirestoreViewModel
+    firestoreViewModel: FirestoreViewModel,
+    fcmViewModel: FCMViewModel
 ) {
     val navController = rememberAnimatedNavController()
 
@@ -69,7 +71,8 @@ fun NavigationScreen(
             "Discover", Icons.Filled.List, content = {
                 HomeScreen(
                     navController = navController,
-                    firestoreViewModel = firestoreViewModel
+                    firestoreViewModel = firestoreViewModel,
+                    fcmViewModel = fcmViewModel
                 )
             }
         ),

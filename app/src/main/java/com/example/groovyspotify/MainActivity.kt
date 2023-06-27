@@ -19,6 +19,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -30,6 +31,7 @@ import com.example.groovyspotify.ui.theme.GroovySpotifyTheme
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.groovyspotify.navigation.NavigationScreen
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
+import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.profilescreens.loadContacts
 //import com.example.groovyspotify.ui.profilescreens.loadImageFromUri
@@ -43,6 +45,8 @@ class MainActivity : ComponentActivity() {
     private val spotifyAuthViewModel by  viewModels<SpotifyApiViewModel>()
     private val navEliminationViewModel by viewModels<NavEliminationViewModel>()
     private val firestoreViewModel by viewModels<FirestoreViewModel>()
+    private val fcmViewModel by viewModels<FCMViewModel>()
+
 //    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 //    private lateinit var getContent: ActivityResultLauncher<String>
 
@@ -51,6 +55,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             GroovySpotifyTheme {
                 // A surface container using the 'background' color from the theme
+                val READ_CONTACTS_PERMISSION_REQUEST = 123
+
 
                 val requestPermissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission(),
@@ -58,6 +64,9 @@ class MainActivity : ComponentActivity() {
                         if (isGranted) {
                             // Permission granted, perform contact synchronization
                             loadContacts(context = this)
+                        }
+                        else{
+
                         }
                     }
                 )
@@ -71,10 +80,13 @@ class MainActivity : ComponentActivity() {
                     loadContacts(this)
                 } else {
                     // Permission not granted, request it
-                    requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                    LaunchedEffect(key1 = Unit ){
+                        requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+
+                    }
                 }
 
-                NavigationScreen(viewModel = viewModel,spotifyApiViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel)
+                NavigationScreen(viewModel = viewModel,spotifyApiViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel, fcmViewModel = fcmViewModel)
 
 
             }

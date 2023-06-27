@@ -39,13 +39,14 @@ import com.example.groovyspotify.R
 import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.model.firestore.Contact
 import com.example.groovyspotify.model.firestore.UserProfile
+import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import font.helveticaFamily
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
 @Composable
-fun HomeScreen(navController: NavController,firestoreViewModel: FirestoreViewModel) {
+fun HomeScreen(navController: NavController,fcmViewModel: FCMViewModel,firestoreViewModel: FirestoreViewModel) {
     var filteredUserProfiles by remember{ mutableStateOf(ArrayList<UserProfile>()) }
     var listOfProfiles = firestoreViewModel?.listOfRecommendedProfiles?.collectAsState()
     var profileName by remember { mutableStateOf("") }
@@ -122,8 +123,7 @@ fun HomeScreen(navController: NavController,firestoreViewModel: FirestoreViewMod
                                                filteredUsernames =
                                                     mapOfProfileSimilarities.filterValues { value -> value > 0.4 }
                                                 Log.d("userSuggestedNames", "HomeScreen: $filteredUsernames")
-
-
+                                                fcmViewModel.fcmMessagingToken()
 
                                             }
                                             else -> {}
