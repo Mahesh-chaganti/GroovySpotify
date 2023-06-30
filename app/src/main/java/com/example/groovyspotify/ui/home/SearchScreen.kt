@@ -173,10 +173,10 @@ fun SearchScreen(spotifyApiViewModel: SpotifyApiViewModel?,navController: NavCon
                                     Column() {
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        AlbumRow(album = item)
+                                        AlbumRow(album = item, navController = navController)
                                         Spacer(modifier = Modifier.height(8.dp))
                                         if (index == it.data.albums.items.size - 1) {
-                                            OneTimeLazyRow(items = it.data.playlists.items)
+                                            OneTimeLazyRow(items = it.data.playlists.items, navController = navController)
                                         }
 
                                     }

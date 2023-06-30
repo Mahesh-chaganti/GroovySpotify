@@ -1,5 +1,7 @@
 package com.example.groovyspotify.ui.profilescreens
 
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -67,10 +69,15 @@ import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
+import com.google.gson.Gson
 import font.helveticaFamily
 
 @Composable
-fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminationViewModel: NavEliminationViewModel?, navController: NavController) {
+fun ProfileFeaturedAudio(
+    spotifyApiViewModel: SpotifyApiViewModel?,
+    navEliminationViewModel: NavEliminationViewModel?,
+    navController: NavController
+) {
 
     var searchQuery by remember { mutableStateOf("") }
     val tapState = spotifyApiViewModel?.tapState!!.collectAsState()
@@ -214,10 +221,13 @@ fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminatio
                                     Column() {
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        AlbumRow(album = item)
+                                        AlbumRow(album = item, navController = navController)
                                         Spacer(modifier = Modifier.height(8.dp))
                                         if (index == it.data.albums.items.size - 1) {
-                                            OneTimeLazyRow(items = it.data.playlists.items)
+                                            OneTimeLazyRow(
+                                                items = it.data.playlists.items,
+                                                navController = navController
+                                            )
                                         }
 
                                     }
@@ -237,11 +247,11 @@ fun ProfileFeaturedAudio(spotifyApiViewModel: SpotifyApiViewModel?,navEliminatio
 }
 
 @Composable
-fun OneTimeLazyRow(items: List<Playlist>) {
+fun OneTimeLazyRow(items: List<Playlist>, navController: NavController) {
 
     LazyRow() {
         itemsIndexed(items) { index, item ->
-            PlaylistRow(playlist = item)
+            PlaylistRow(playlist = item, navController = navController)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -251,7 +261,7 @@ fun OneTimeLazyRow(items: List<Playlist>) {
 
 
 @Composable
-fun AlbumRow(album: Album) {
+fun AlbumRow(album: Album, navController: NavController) {
     Box(modifier = Modifier.padding(start = 18.dp)) {
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -293,11 +303,25 @@ fun AlbumRow(album: Album) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlaylistRow(playlist: Playlist) {
+fun PlaylistRow(playlist: Playlist, navController: NavController) {
+    var clickable by remember {
+        mutableStateOf(false)
+    }
+    var jsonData by remember {
+        mutableStateOf("")
+    }
+    if (clickable) {
+        navController.navigate("ExoPlayerImpl/$jsonData")
+    }
     Column(
         modifier = Modifier
             .size(180.dp)
-            .padding(4.dp),
+            .padding(4.dp)
+            .clickable {
+                clickable = !clickable
+                jsonData = Uri.encode(Gson().toJson(playlist))
+                navController.navigate("PlaylistSongs/$jsonData")
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -324,15 +348,25 @@ fun PlaylistRow(playlist: Playlist) {
 }
 
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackRow(track: TrackResponse, navController: NavController) {
+    var clickable by remember {
+        mutableStateOf(false)
+    }
+    var jsonData by remember {
+        mutableStateOf("")
+    }
+    if (clickable) {
+        navController.navigate("ExoPlayerImpl/$jsonData")
+    }
     Box(modifier = Modifier
         .padding(start = 18.dp)
         .clickable {
+            clickable = !clickable
+            jsonData = Uri.encode(Gson().toJson(track))
+            Log.d("clickedTrack", "TrackRow: $jsonData")
 
-            navController.navigate("ExoPlayerImpl")
         }) {
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -378,5 +412,9 @@ fun TrackRow(track: TrackResponse, navController: NavController) {
 @Preview
 @Composable
 fun ProfileFeaturedAudioPreview() {
-    ProfileFeaturedAudio(spotifyApiViewModel = null,navEliminationViewModel = null, navController = rememberNavController())
+    ProfileFeaturedAudio(
+        spotifyApiViewModel = null,
+        navEliminationViewModel = null,
+        navController = rememberNavController()
+    )
 }

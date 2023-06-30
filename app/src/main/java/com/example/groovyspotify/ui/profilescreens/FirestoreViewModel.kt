@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.model.firestore.Contact
-import com.example.groovyspotify.model.firestore.MatchedContact
 import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
 import com.google.firebase.firestore.FirebaseFirestore

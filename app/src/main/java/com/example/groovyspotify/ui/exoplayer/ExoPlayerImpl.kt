@@ -62,9 +62,9 @@ import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
 
 @Composable
-fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, firestoreViewModel: FirestoreViewModel,navController: NavController) {
+fun ExoplayerImpl(track: TrackResponse,navEliminationViewModel: NavEliminationViewModel, firestoreViewModel: FirestoreViewModel,navController: NavController) {
     val context = LocalContext.current
-    val myData = navEliminationViewModel.myData
+//    val myData = navEliminationViewModel.myData
     var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
 
     val exoPlayer = remember {
@@ -75,11 +75,11 @@ fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, firestoreVie
                     MediaItem.Builder()
                         .apply {
                             setUri(
-                                myData!!.preview_url
+                              track.preview_url
                             )
                             setMediaMetadata(
                                 MediaMetadata.Builder()
-                                    .setDisplayTitle(myData!!.name)
+                                    .setDisplayTitle(track!!.name)
                                     .build()
                             )
                         }
@@ -168,7 +168,7 @@ fun ExoplayerImpl(navEliminationViewModel: NavEliminationViewModel, firestoreVie
             },
             playbackState = {playbackState},
             title = { exoPlayer.mediaMetadata.displayTitle.toString() },
-            track = myData!!,
+            track = track!!,
             navController = navController,
             firestoreViewModel = firestoreViewModel,
             navEliminationViewModel = navEliminationViewModel
@@ -226,7 +226,7 @@ fun CenterControls(
 
 
             AsyncImage(
-                model = track!!.album.images[0].url,
+                model = track?.album?.images?.get(0)?.url ?: "",
                 contentDescription = "Album Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

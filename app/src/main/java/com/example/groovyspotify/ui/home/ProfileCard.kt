@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -83,68 +83,92 @@ fun ProfileCard(
     isHomeScreen : Boolean
     ) {
 
-
+    val isHomeScreen by remember{ mutableStateOf(isHomeScreen) }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .background(Color.Transparent)
+            .background(Color.Black)
 
     ) {
 
 
+
         AsyncImage(
-            model = R.drawable.image, contentDescription = "My Image",
-            contentScale = ContentScale.FillBounds,
+            model = userProfile?.profilePhotoUrl, contentDescription = "My Image",
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxSize()
-                .graphicsLayer { alpha = 0.02f },
+                .graphicsLayer { alpha = 0.10f },
             alignment = Alignment.Center
         )
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceEvenly) {
+       Box(modifier = Modifier.fillMaxSize()) {
+           if(isHomeScreen) {
+               Icon(
+                   modifier = Modifier
+                       .align(Alignment.TopStart)
+                       .padding(18.dp)
+                       .size(24.dp)
+                       .clickable { navController?.popBackStack() },
+                   painter = painterResource(id = R.drawable.round_arrow_back_ios_24),
+                   contentDescription = "Back button",
+                   tint = Color(0xFFFF5722)
+               )
+           }
+           Text(
+               modifier = Modifier.align(Alignment.TopCenter),
+               text = "Profile",
+               fontSize = 18.sp,
+               fontFamily = helveticaFamily,
+               fontStyle = FontStyle.Normal,
+               fontWeight = FontWeight.Medium
+           )
+           Column(Modifier.fillMaxSize().align(Alignment.Center), verticalArrangement = Arrangement.SpaceEvenly) {
 
-        ReUsableProfileCard(userProfile = userProfile, modifier = Modifier.fillMaxSize(), navController = navController,isHomeScreen = isHomeScreen)
+
+               ReUsableProfileCard(userProfile = userProfile, modifier = Modifier.fillMaxSize())
 
 
 
-            if (userProfile != null) {
-                ArtistsAndLanguagesGrid(
-                    userProfile = userProfile
-                )
-            }
-            if (navController != null && !isHomeScreen) {
-                Button(
-                    onClick = {
+               if (userProfile != null) {
+                   ArtistsAndLanguagesGrid(
+                       userProfile = userProfile
+                   )
+               }
+               if (navController != null && !isHomeScreen) {
+                   Button(
+                       onClick = {
 
-                        navController?.navigate("LoginAuthScreen") {
-                            popUpTo("HomeScreen") { inclusive = true }
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        text = "Logout",
-                        fontSize = 18.sp,
-                        fontFamily = helveticaFamily,
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.Medium
-                    )
+                           navController?.navigate("LoginAuthScreen") {
+                               popUpTo("HomeScreen") { inclusive = true }
+                           }
+                       },
+                       colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFFFF5722)),
+                       modifier = Modifier
+                           .fillMaxWidth()
+                           .height(64.dp),
+                       shape = RoundedCornerShape(16.dp)
+                   ) {
+                       Text(
+                           text = "Logout",
+                           fontSize = 18.sp,
+                           fontFamily = helveticaFamily,
+                           fontStyle = FontStyle.Normal,
+                           fontWeight = FontWeight.Medium
+                       )
 
-                }
-            }
-        }
+                   }
+               }
+           }
+       }
 
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ReUsableProfileCard(userProfile: UserProfile?, modifier: Modifier,isHomeScreen: Boolean,navController: NavController?) {
+fun ReUsableProfileCard(userProfile: UserProfile?, modifier: Modifier) {
     val context = LocalContext.current
     val randomSubset = userProfile?.favoriteArtists?.chunked(5)
     Log.d("Profile", "ProfileCard: $userProfile")
@@ -221,13 +245,15 @@ fun ReUsableProfileCard(userProfile: UserProfile?, modifier: Modifier,isHomeScre
 
         ) {
             AsyncImage(
-                model = R.drawable.image, contentDescription = "My Image",
-                contentScale = ContentScale.FillBounds,
+                model = userProfile?.profilePhotoUrl, contentDescription = "My Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .align(Alignment.Center)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .border(shape = RoundedCornerShape(8.dp), color = Color.Unspecified,width = 1.dp),
                 alignment = Alignment.Center
             )
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -276,24 +302,28 @@ fun ReUsableProfileCard(userProfile: UserProfile?, modifier: Modifier,isHomeScre
                 ) {
 
 
-                    Text(
-                        modifier = Modifier.padding(2.dp),
-                        text = "Friends",
-                        fontSize = 24.sp,
-                        fontFamily = helveticaFamily,
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    )
-                    Text(
-                        modifier = Modifier.padding(2.dp),
-                        text = "Discover",
-                        fontSize = 24.sp,
-                        fontFamily = helveticaFamily,
-                        fontStyle = FontStyle.Normal,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
-                    )
+                    userProfile?.name?.let {
+                        Text(
+                            modifier = Modifier.padding(2.dp),
+                            text = it,
+                            fontSize = 24.sp,
+                            fontFamily = helveticaFamily,
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                    }
+                    userProfile?.userName?.let {
+                        Text(
+                            modifier = Modifier.padding(2.dp),
+                            text = it,
+                            fontSize = 24.sp,
+                            fontFamily = helveticaFamily,
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                    }
                     ExoplayerAnimation(
                         isAnimating = isPlaying,
                         modifier = Modifier
@@ -451,7 +481,7 @@ fun CardAlbumArt(isAudioPlaying: () -> Boolean, onPauseToggle: () -> Unit) {
         AsyncImage(
             model = R.drawable.image,
             contentDescription = "My album art",
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.Crop,
             alignment = Alignment.Center
         )
         IconButton(

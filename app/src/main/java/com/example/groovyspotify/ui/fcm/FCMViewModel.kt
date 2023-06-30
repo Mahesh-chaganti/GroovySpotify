@@ -4,7 +4,15 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import com.example.groovyspotify.model.realtimedatabase.User
 import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,8 +30,11 @@ class FCMViewModel @Inject constructor(): ViewModel(){
     private val _fcmToken = MutableStateFlow<String>("")
     val fcmToken : StateFlow<String> = _fcmToken
 
+    private val firebaseMessaging = FirebaseMessaging.getInstance()
+
+
     fun fcmMessagingToken(){
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+        firebaseMessaging.token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("", "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
@@ -38,11 +49,29 @@ class FCMViewModel @Inject constructor(): ViewModel(){
 
         })
     }
-    fun sendNotificationToUser(phone: String){
+
+    fun sendNotificationToUser(userName: String){
 
 
-        val user2FcmToken = "USER2_FCM_TOKEN" // Replace with the actual FCM token of User 2
 
+        val realtimeDbUsers: DatabaseReference = Firebase.database.reference.child("Users/User: $userName")
+        var user: User = User()
+        val postListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Get Post object and use the values to update the UI
+                user = dataSnapshot.getValue<User>()!!
+                // ...
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w("error", "loadUserDetails :onCancelled", databaseError.toException())
+            }
+        }
+
+        realtimeDbUsers.addValueEventListener(postListener)
+
+        val user2FcmToken = user.fcmToken// Replace with the actual FCM token of User 2
 
         val data = mutableMapOf<String, String>()
         data["title"] = "New Message"
@@ -54,5 +83,6 @@ class FCMViewModel @Inject constructor(): ViewModel(){
 
         FirebaseMessaging.getInstance().send(message)
     }
+
 
 }

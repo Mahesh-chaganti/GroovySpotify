@@ -34,6 +34,7 @@ import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
 import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.profilescreens.loadContacts
+import com.example.groovyspotify.ui.realtimedatabase.RealtimeDatabaseViewModel
 //import com.example.groovyspotify.ui.profilescreens.loadImageFromUri
 //import com.example.groovyspotify.ui.profilescreens.openGallery
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
@@ -46,10 +47,12 @@ class MainActivity : ComponentActivity() {
     private val navEliminationViewModel by viewModels<NavEliminationViewModel>()
     private val firestoreViewModel by viewModels<FirestoreViewModel>()
     private val fcmViewModel by viewModels<FCMViewModel>()
+    private val realtimeDatabaseViewModel by viewModels<RealtimeDatabaseViewModel>()
 
 //    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 //    private lateinit var getContent: ActivityResultLauncher<String>
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -86,7 +89,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                NavigationScreen(viewModel = viewModel,spotifyApiViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel, fcmViewModel = fcmViewModel)
+                NavigationScreen(viewModel = viewModel,spotifyApiViewModel = spotifyAuthViewModel,navEliminationViewModel = navEliminationViewModel,firestoreViewModel= firestoreViewModel, fcmViewModel = fcmViewModel, realtimeDatabaseViewModel = realtimeDatabaseViewModel)
 
 
             }

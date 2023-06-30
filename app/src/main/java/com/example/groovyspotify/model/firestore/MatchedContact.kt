@@ -1,3 +1,3 @@
 package com.example.groovyspotify.model.firestore
 
-data class MatchedContact(val userName: String = "", val name: String ="", val phone:String="")
+data class UserContact(val userName: String = "", val name: String ="", val phone:String="")

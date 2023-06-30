@@ -1,6 +1,8 @@
 package com.example.groovyspotify.navigation
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
@@ -12,6 +14,11 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.groovyspotify.model.firestore.UserProfile
+import com.example.groovyspotify.model.spotifyapidata.playlist.Playlist
+import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.model.swipeablescreens.SwipeableScreens
 import com.example.groovyspotify.ui.auth.LoginAuthScreen
 import com.example.groovyspotify.ui.auth.SignUpScreen
@@ -24,18 +31,22 @@ import com.example.groovyspotify.ui.home.FriendsScreen
 import com.example.groovyspotify.ui.home.HomeScreen
 import com.example.groovyspotify.ui.home.MainHomeScreen
 import com.example.groovyspotify.ui.home.MusicRoomsScreen
+import com.example.groovyspotify.ui.home.PlaylistSongs
+import com.example.groovyspotify.ui.home.ProfileCard
 import com.example.groovyspotify.ui.home.SearchScreen
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.profilescreens.PhotoUploadScreen
 import com.example.groovyspotify.ui.profilescreens.ProfileFeaturedAudio
 import com.example.groovyspotify.ui.profilescreens.ProfileScreenArtist
 import com.example.groovyspotify.ui.profilescreens.ProfileScreenLanguage
+import com.example.groovyspotify.ui.realtimedatabase.RealtimeDatabaseViewModel
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.*
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationScreen(
@@ -43,7 +54,8 @@ fun NavigationScreen(
     spotifyApiViewModel: SpotifyApiViewModel,
     navEliminationViewModel: NavEliminationViewModel,
     firestoreViewModel: FirestoreViewModel,
-    fcmViewModel: FCMViewModel
+    fcmViewModel: FCMViewModel,
+    realtimeDatabaseViewModel: RealtimeDatabaseViewModel
 ) {
     val navController = rememberAnimatedNavController()
 
@@ -79,7 +91,7 @@ fun NavigationScreen(
         SwipeableScreens(
             "Friends", Icons.Filled.Face, content = {
                 FriendsScreen(
-                    viewModel,firestoreViewModel
+                    viewModel,firestoreViewModel,fcmViewModel,realtimeDatabaseViewModel
                 )
             }
         ),
@@ -107,7 +119,7 @@ fun NavigationScreen(
             "MainHomeScreen",
             enterTransition = {
                 when (initialState.destination.route) {
-                    "OTPScreen" ->
+                    "ProfileCard" ->
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(700)
@@ -118,7 +130,7 @@ fun NavigationScreen(
             },
             exitTransition = {
                 when (targetState.destination.route) {
-                    "OTPScreen" ->
+                    "ProfileCard" ->
                         slideOutOfContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
                             animationSpec = tween(700)
@@ -129,7 +141,7 @@ fun NavigationScreen(
             },
             popEnterTransition = {
                 when (initialState.destination.route) {
-                    "OTPScreen" ->
+                    "ProfileCard" ->
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(700)
@@ -140,7 +152,7 @@ fun NavigationScreen(
             },
             popExitTransition = {
                 when (targetState.destination.route) {
-                    "OTPScreen" ->
+                    "ProfileCard" ->
                         slideOutOfContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(700)
@@ -252,7 +264,7 @@ fun NavigationScreen(
                 }
             }
         ) { SignUpScreen(viewModel, firestoreViewModel = firestoreViewModel, navController) }
-//
+
         composable(
             "ProfileScreenLanguage",
             enterTransition = {
@@ -413,7 +425,11 @@ fun NavigationScreen(
             )
         }
         composable(
-            "ExoPlayerImpl",
+            "ProfileCard/{isHomeScreen}/{userProfile}",
+            arguments = listOf(navArgument("isHomeScreen") { type = NavType.BoolType },
+                navArgument("userProfile"){type = UserProfileType() }
+            ),
+
             enterTransition = {
                 when (initialState.destination.route) {
                     "LoginAuthScreen" ->
@@ -459,12 +475,136 @@ fun NavigationScreen(
                 }
             }
         ) {
-            ExoplayerImpl(
-                navEliminationViewModel = navEliminationViewModel,
-                firestoreViewModel = firestoreViewModel,
-                navController
+
+            ProfileCard(
+                userProfile = it.arguments?.getParcelable("userProfile"),
+                navController = navController,
+                isHomeScreen = it.arguments!!.getBoolean("isHomeScreen")
             )
+
         }
+        composable(
+            "ExoPlayerImpl/{track}",
+            arguments = listOf(navArgument("track") {type = TrackType() }
+            ),
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            }
+        ) {
+
+            it.arguments?.getParcelable<TrackResponse>("track")?.let { it1 ->
+                ExoplayerImpl(
+                    navEliminationViewModel = navEliminationViewModel,
+                    firestoreViewModel = firestoreViewModel,
+                    navController =  navController,
+                    track = it1
+                )
+            }
+
+        }
+        composable(
+            "PlaylistSongs/{playlist}",
+            arguments = listOf(navArgument("playlist") {type = PlaylistType() }
+            ),
+            enterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            exitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popEnterTransition = {
+                when (initialState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            },
+            popExitTransition = {
+                when (targetState.destination.route) {
+                    "LoginAuthScreen" ->
+                        slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(700)
+                        )
+
+                    else -> null
+                }
+            }
+        ) {
+
+
+            it.arguments?.getParcelable<Playlist>("playlist")?.let { it1 ->
+                PlaylistSongs(
+
+                    navController =  navController,
+                    playlist = it1
+                )
+            }
+
+
+        }
+
         composable(
             "AccountInfoScreen",
             enterTransition = {

@@ -1,5 +1,7 @@
 package com.example.groovyspotify.ui.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,13 +33,16 @@ import coil.compose.AsyncImage
 import com.example.groovyspotify.R
 import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.exoplayer.ExoplayerAnimation
+import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.profilescreens.ContactSyncScreen
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
+import com.example.groovyspotify.ui.realtimedatabase.RealtimeDatabaseViewModel
 import font.helveticaFamily
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun FriendsScreen(viewModel: AuthViewModel,firestoreViewModel: FirestoreViewModel) {
-    ContactSyncScreen(viewModel = viewModel, firestoreViewModel = firestoreViewModel )
+fun FriendsScreen(viewModel: AuthViewModel,firestoreViewModel: FirestoreViewModel,fcmViewModel: FCMViewModel,realtimeDatabaseViewModel: RealtimeDatabaseViewModel) {
+    ContactSyncScreen(viewModel = viewModel, firestoreViewModel = firestoreViewModel,fcmViewModel, realtimeDatabaseViewModel )
 //    Box(
 //        modifier = Modifier
 //            .fillMaxSize()

@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,21 +42,32 @@ fun MusicRoomsScreen() {
             )
     )
     {
+        Icon(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(18.dp)
+                .size(24.dp)
+                .clickable {  },
+            imageVector = Icons.Filled.Notifications,
+            contentDescription = "Back button",
+            tint = Color.White
+        )
+        Text(
+            modifier = Modifier
+                .align(Alignment.TopCenter).padding(8.dp),
+            text = "Musicrooms",
+            fontSize = 36.sp,
+            fontFamily = helveticaFamily,
+            fontStyle = FontStyle.Normal,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White
+        )
         Column(modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize().padding(top = 50.dp).padding(16.dp)
         ) {
 
 
-            Text(
-                modifier = Modifier
-                    .padding(8.dp),
-                text = "Musicrooms",
-                fontSize = 36.sp,
-                fontFamily = helveticaFamily,
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White
-            )
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,25 +78,28 @@ fun MusicRoomsScreen() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp)
-                            .clickable { },
+                            .clickable {  },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start
                     ) {
-                        AsyncImage(
-                            modifier = Modifier
-                                .size(128.dp)
-                                .background(shape = CircleShape, color = Color.Transparent)
-                                .padding(8.dp),
-                            model = R.drawable.image,
-                            contentDescription = "user",
-                            contentScale = ContentScale.Crop,
-                            alignment = Alignment.Center,
 
-                            )
+
+
+                            AsyncImage(
+                                modifier = Modifier.size(48.dp)
+                                    .background(shape = CircleShape, color = Color.White)
+                                    .padding(8.dp),
+                                model = R.drawable.image,
+                                contentDescription = "user",
+                                contentScale = ContentScale.Crop,
+                                alignment = Alignment.Center,
+
+                                )
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(4.dp)
+                                .padding(16.dp)
                         ) {
                             Text(
                                 modifier = Modifier.padding(2.dp),
@@ -112,6 +129,8 @@ fun MusicRoomsScreen() {
         }
     }
 }
+
+
 
 @Preview
 @Composable

@@ -6,6 +6,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,20 +54,30 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.model.firestore.Contact
-import com.example.groovyspotify.model.firestore.MatchedContact
+import com.example.groovyspotify.model.firestore.UserContact
 import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.ui.auth.AuthViewModel
 import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
+import com.example.groovyspotify.ui.realtimedatabase.RealtimeDatabaseViewModel
 import font.helveticaFamily
 import kotlinx.coroutines.launch
+import java.sql.Time
+import java.time.LocalDateTime
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreViewModel?,fcmViewModel: FCMViewModel) {
+fun ContactSyncScreen(
+    viewModel: AuthViewModel?,
+    firestoreViewModel: FirestoreViewModel?,
+    fcmViewModel: FCMViewModel,
+    realtimeDatabaseViewModel: RealtimeDatabaseViewModel
+) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val contacts = loadContacts(context = context)
-    var matchedContacts by remember { mutableStateOf(ArrayList<Contact>()) }
+    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
+    var matchedContacts by remember { mutableStateOf(ArrayList<UserContact>()) }
     var matchedContactsAll = contacts.toSet().toList()
     Log.d(
         "Least no of contacts",
@@ -92,7 +104,13 @@ fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreVi
                         matchedContactsAll.forEach { contact ->
                             if (contact.number?.contains(item.phone) == true) {
                                 if (matchedContacts.isEmpty()) {
-                                    matchedContacts.add(contact)
+                                    matchedContacts.add(
+                                        UserContact(
+                                            item.userName,
+                                            item.name,
+                                            contact.number
+                                        )
+                                    )
                                     Log.d(
                                         "Each Contact",
                                         "ContactSyncScreen: ${item.name} and $contact"
@@ -100,10 +118,16 @@ fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreVi
 
                                 } else {
                                     matchedContacts.forEach {
-                                        if (it.number?.contains(item.phone) == true) {
+                                        if (it.phone?.contains(item.phone) == true) {
 
                                         } else {
-                                            matchedContacts.add(contact)
+                                            matchedContacts.add(
+                                                UserContact(
+                                                    item.userName,
+                                                    item.name,
+                                                    contact.number
+                                                )
+                                            )
                                             Log.d(
                                                 "Each Contact",
                                                 "ContactSyncScreen: ${item.name} and $contact"
@@ -120,11 +144,12 @@ fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreVi
                     }
                     Log.d("matching", "ContactSyncScreen: ${matchedContacts}")
 
+
                 } catch (e: Exception) {
                     Log.d("Contact error", "ContactSyncScreen: $e")
 
-                }
 
+                }
             }
 
             else -> {}
@@ -140,16 +165,45 @@ fun ContactSyncScreen(viewModel: AuthViewModel?, firestoreViewModel: FirestoreVi
             Log.d("matching", "ContactSyncScreen: ${matchedContacts.size}")
 
             val matchingContacts = matchedContacts.toSet().toList()
-            FilteredContactList(filteredContacts = matchingContacts,fcmViewModel = fcmViewModel)
-            Log.d("matching", "ContactSyncScreen: ${matchingContacts.size}")
+            myUserProfile?.value.let {
+                when (it) {
+                    is Resource.Failure -> {
+                        val context = LocalContext.current
+                        Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
+                    }
+
+                    Resource.Loading -> {
+                        CircularDotsAnimation()
+                    }
+
+                    is Resource.Success -> {
+                        FilteredContactList(
+                            filteredContacts = matchingContacts,
+                            fcmViewModel = fcmViewModel,
+                            realtimeDatabaseViewModel = realtimeDatabaseViewModel,
+                            myUserProfile = it.data
+                        )
+                        Log.d("matching", "ContactSyncScreen: ${matchingContacts.size}")
+                    }
+
+                    else -> {}
+                }
+            }
+
 
         }
     }
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun FilteredContactList(filteredContacts: List<Contact>,fcmViewModel: FCMViewModel?) {
+fun FilteredContactList(
+    filteredContacts: List<UserContact>,
+    fcmViewModel: FCMViewModel?,
+    realtimeDatabaseViewModel: RealtimeDatabaseViewModel?,
+    myUserProfile: UserProfile
+) {
 
     if (filteredContacts.isNotEmpty()) {
 
@@ -200,7 +254,7 @@ fun FilteredContactList(filteredContacts: List<Contact>,fcmViewModel: FCMViewMod
                             )
                         }
 
-                        contact.number?.let {
+                        contact.phone?.let {
                             Text(
                                 text = it,
                                 fontSize = 18.sp,
@@ -219,7 +273,14 @@ fun FilteredContactList(filteredContacts: List<Contact>,fcmViewModel: FCMViewMod
                             .padding(40.dp),
                         shape = RoundedCornerShape(24.dp),
                         onClick = {
-                            fcmViewModel?.sendNotificationToUser(phone = "")
+                            contact.userName?.let { fcmViewModel?.sendNotificationToUser(userName = it) }
+                            realtimeDatabaseViewModel?.sendFriendRequest(
+                                receiverUsername = contact.userName,
+                                senderUsername = myUserProfile.userName,
+                                status = "pending",
+                                time = LocalDateTime.now().toString()
+                            )
+
                         },
                         colors = ButtonDefaults
                             .buttonColors(
@@ -283,15 +344,16 @@ private fun hasReadContactsPermission(context: Context): Boolean {
         Manifest.permission.READ_CONTACTS
     ) == PackageManager.PERMISSION_GRANTED
 }
-
-@Preview
-@Composable
-fun ContactsSyncScreenPreview() {
-    val dummyContacts = listOf(
-        Contact("Kohli", "12345"),
-        Contact("Kobe", "56789"),
-        Contact("Kyrie", "2468")
-    )
-
-    FilteredContactList(filteredContacts = dummyContacts, fcmViewModel = null)
-}
+//
+//@RequiresApi(Build.VERSION_CODES.O)
+//@Preview
+//@Composable
+//fun ContactsSyncScreenPreview() {
+//    val dummyContacts = listOf(
+//        UserContact("Kohli", "name","12345"),
+//        UserContact("Kobe", "56789",""),
+//        UserContact("Kyrie", "2468","")
+//    )
+//
+//    FilteredContactList(filteredContacts = dummyContacts, fcmViewModel = null,realtimeDatabaseViewModel = null, myUserProfile = )
+//}
