@@ -4,5 +4,5 @@ data class User(
     val userName: String = "",
     val phone: String = "",
     val fcmToken: String = "",
-    val friends: List<User> = listOf(User())
+    val friends: List<String> = listOf()
 )

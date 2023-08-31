@@ -14,6 +14,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,13 +28,22 @@ class FCMViewModel @Inject constructor(): ViewModel(){
 
 
 
+
+
+    private val firebaseMessaging = FirebaseMessaging.getInstance()
+    private val database: DatabaseReference = Firebase.database.reference
+
+    private val _userFriend = MutableStateFlow(User())
+    val userFriend : StateFlow<User> = _userFriend
+
     private val _fcmToken = MutableStateFlow<String>("")
     val fcmToken : StateFlow<String> = _fcmToken
 
-    private val firebaseMessaging = FirebaseMessaging.getInstance()
+    fun getFCMToken(){
 
 
-    fun fcmMessagingToken(){
+        // Handle token refresh
+        // You can send the new token to your server or perform other actions
         firebaseMessaging.token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("", "Fetching FCM registration token failed", task.exception)
@@ -41,48 +51,59 @@ class FCMViewModel @Inject constructor(): ViewModel(){
             }
 
             // Get new FCM registration token
-             _fcmToken.value = task.result
+            _fcmToken.value = task.result
 
             // Log and toast
             val msg = "This is the ${_fcmToken.value}"
             Log.d("Token message", msg)
 
         })
+
     }
-
     fun sendNotificationToUser(userName: String){
-
-
-
-        val realtimeDbUsers: DatabaseReference = Firebase.database.reference.child("Users/User: $userName")
-        var user: User = User()
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // Get Post object and use the values to update the UI
-                user = dataSnapshot.getValue<User>()!!
-                // ...
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w("error", "loadUserDetails :onCancelled", databaseError.toException())
-            }
+        database.child("Users").child("User: $userName").get().addOnSuccessListener {
+            _userFriend.value = it.value as User
+            Log.i("firebase", "Got value ${it.value}")
+        }.addOnFailureListener{
+            Log.e("firebase", "Error getting data", it)
         }
+//            val realtimeDbUsers: DatabaseReference = Firebase.database.reference.child("/Users/User: $userName")
+//
+//            val postListener = object : ValueEventListener {
+//                override fun onDataChange(dataSnapshot: DataSnapshot) {
+//                    // Get Post object and use the values to update the UI
+//                    _userFriend.value = dataSnapshot.getValue<User>()!!
+//                    // ...
+//                }
+//
+//                override fun onCancelled(databaseError: DatabaseError) {
+//                    // Getting Post failed, log a message
+//                    Log.w("error", "loadUserDetails :onCancelled", databaseError.toException())
+//                }
+//            }
+//            Log.d("user retrieval failed", "sendNotificationToUser: ${_userFriend.value}")
+//            realtimeDbUsers.addValueEventListener(postListener)
+//        }catch(e: Exception){
+//            Log.d("user retrieval failed", "sendNotificationToUser: $e")
+//        }
 
-        realtimeDbUsers.addValueEventListener(postListener)
 
-        val user2FcmToken = user.fcmToken// Replace with the actual FCM token of User 2
 
+        val user2FcmToken = _userFriend.value.fcmToken// Replace with the actual FCM token of User 2
+        Log.d("user2'sToken", "sendNotificationToUser: $user2FcmToken")
         val data = mutableMapOf<String, String>()
-        data["title"] = "New Message"
-        data["body"] = "You have a new message from User 1"
+        data["title"] = "Vibe request"
+        data["body"] = "Hello kobe"
 
         val message = RemoteMessage.Builder(user2FcmToken)
             .setData(data)
             .build()
 
-        FirebaseMessaging.getInstance().send(message)
+        firebaseMessaging.send(message)
+
     }
+
+
 
 
 }

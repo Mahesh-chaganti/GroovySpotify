@@ -157,7 +157,7 @@ fun HomeScreen(
                                             "userSuggestedNames",
                                             "HomeScreen: $filteredUsernames"
                                         )
-                                        fcmViewModel.fcmMessagingToken()
+//                                        fcmViewModel.fcmMessagingToken()
 
                                     }
 

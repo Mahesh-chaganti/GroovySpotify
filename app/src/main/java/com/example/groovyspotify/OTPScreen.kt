@@ -1,7 +1,6 @@
 package com.example.groovyspotify
 
 import android.app.Activity
-import android.content.ContentValues
 import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Toast
@@ -26,14 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.groovyspotify.ui.auth.AuthViewModel
+import com.example.groovyspotify.ui.auth.LoginViewModel
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import java.util.concurrent.TimeUnit
 
 @Composable
 fun OTPScreen(
-    viewModel: AuthViewModel?,
+    viewModel: LoginViewModel?,
     navController: NavController?
 ) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()

@@ -3,11 +3,11 @@ package com.example.groovyspotify.data.googleAuth
 import android.content.Intent
 import android.content.IntentSender
 import com.example.groovyspotify.data.utils.FirebaseConstant
-import com.example.groovyspotify.data.utils.await
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.tasks.await
 
 import kotlin.coroutines.cancellation.CancellationException
 

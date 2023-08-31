@@ -168,10 +168,10 @@ fun PhotoUploadScreen(firestoreViewModel: FirestoreViewModel?,navController: Nav
                                     "profilePhotoUrl" to downloadUrlFlow.value
                                 )
 
-                                firestoreViewModel?.updateUserProfile(
-                                    userName = userName,
-                                    mapData = mapData
-                                )
+//                                firestoreViewModel?.createOrUpdateMyUserProfile(
+//                                    userName = userName,
+//                                    mapData = mapData
+//                                )
 
                             }
                         }

@@ -1,5 +1,6 @@
 package com.example.groovyspotify.ui.exoplayer
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -54,18 +55,34 @@ import font.helveticaFamily
 import kotlinx.coroutines.launch
 
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.media3.ui.PlayerControlView
 import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
+import com.example.groovyspotify.ui.profilescreens.audio.FeaturedAudioViewModel
+
+import androidx.compose.runtime.*
+import androidx.media3.common.MediaItem.fromUri
+
+//import com.google.android.exoplayer2.ExoPlayer
+//import com.google.android.exoplayer2.MediaItem.fromUri
+//import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+//import com.google.android.exoplayer2.ui.StyledPlayerView
 
 @Composable
-fun ExoplayerImpl(track: TrackResponse,navEliminationViewModel: NavEliminationViewModel, firestoreViewModel: FirestoreViewModel,navController: NavController) {
+fun ExoplayerImpl(featuredAudioViewModel: FeaturedAudioViewModel, navController: NavController) {
     val context = LocalContext.current
 //    val myData = navEliminationViewModel.myData
-    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
+    var track = featuredAudioViewModel.uiState.value.clickedTrack
 
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
@@ -75,7 +92,7 @@ fun ExoplayerImpl(track: TrackResponse,navEliminationViewModel: NavEliminationVi
                     MediaItem.Builder()
                         .apply {
                             setUri(
-                              track.preview_url
+                                track.preview_url
                             )
                             setMediaMetadata(
                                 MediaMetadata.Builder()
@@ -117,7 +134,6 @@ fun ExoplayerImpl(track: TrackResponse,navEliminationViewModel: NavEliminationVi
         }
 
         AndroidView(modifier = Modifier
-            .fillMaxSize()
             .align(Alignment.Center),
             factory = {
                 PlayerView(context).apply {
@@ -140,7 +156,7 @@ fun ExoplayerImpl(track: TrackResponse,navEliminationViewModel: NavEliminationVi
         CenterControls(
             modifier = Modifier.fillMaxSize(),
 
-            isPlaying = {isPlaying},
+            isPlaying = { isPlaying },
 
             onPauseToggle = {
                 when {
@@ -166,22 +182,15 @@ fun ExoplayerImpl(track: TrackResponse,navEliminationViewModel: NavEliminationVi
                 }
                 isPlaying = isPlaying.not()
             },
-            playbackState = {playbackState},
+            playbackState = { playbackState },
             title = { exoPlayer.mediaMetadata.displayTitle.toString() },
-            track = track!!,
+            track = track,
             navController = navController,
-            firestoreViewModel = firestoreViewModel,
-            navEliminationViewModel = navEliminationViewModel
-        )
+
+            )
 
 
     }
-
-
-
-
-
-
 
 
 }
@@ -196,9 +205,8 @@ fun CenterControls(
     title: () -> String,
     track: TrackResponse?,
     navController: NavController?,
-    firestoreViewModel: FirestoreViewModel?,
-    navEliminationViewModel: NavEliminationViewModel?
-) {
+
+    ) {
     var userName by remember {
         mutableStateOf("")
     }
@@ -206,9 +214,6 @@ fun CenterControls(
 
     var title = remember(title()) { title() }
     var playerState by remember { mutableStateOf(playbackState()) }
-    var featuredAudio by remember { mutableStateOf("") }
-    var myUserProfile = firestoreViewModel?.myUserProfile?.collectAsState()
-    var profilePhotoUrlEmpty by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -278,7 +283,10 @@ fun CenterControls(
             }
         }
         Row(
-            modifier = Modifier.fillMaxWidth().padding(20.dp).align(Alignment.BottomCenter),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -315,23 +323,23 @@ fun CenterControls(
                     .padding(24.dp),
                 shape = RoundedCornerShape(24.dp),
                 onClick = {
-                    featuredAudio = track?.preview_url!!
-                    val mapData = mapOf(
-                        "featuredAudio" to featuredAudio)
-                    scope.launch {
-                        navEliminationViewModel?.selectedFeaturedAudio(data = track)
-
-                        firestoreViewModel?.updateUserProfile(
-                            userName = userName,
-                            mapData = mapData
-                        )
-                    }
-                    if(profilePhotoUrlEmpty) {
-                        navController?.navigate("PhotoUploadScreen")
-                    }
-                    else{
-                        navController?.navigate("MainHomeScreen")
-                    }
+//                    featuredAudio = track?.preview_url!!
+//                    val mapData = mapOf(
+//                        "featuredAudio" to featuredAudio)
+//                    scope.launch {
+//                        navEliminationViewModel?.selectedFeaturedAudio(data = track)
+//
+////                        firestoreViewModel?.createOrUpdateMyUserProfile(
+////                            userName = userName,
+////                            mapData = mapData
+////                        )
+//                    }
+//                    if(profilePhotoUrlEmpty) {
+//                        navController?.navigate("PhotoUploadScreen")
+//                    }
+//                    else{
+//                        navController?.navigate("MainHomeScreen")
+//                    }
                 },
                 colors = ButtonDefaults
                     .buttonColors(
@@ -353,43 +361,50 @@ fun CenterControls(
             }
 
         }
-        myUserProfile?.value.let {
-            when (it) {
-                is Resource.Failure -> {
-                    val context = LocalContext.current
-                    Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
-                }
-
-                Resource.Loading -> {
-                    CircularDotsAnimation()
-                }
-
-                is Resource.Success -> {
-                    userName = it.data.userName
-                    if(it.data.profilePhotoUrl.isNullOrBlank()){
-                       profilePhotoUrlEmpty = true
-                    }
-
-                }
-
-                else -> {}
-            }
-        }
+//        myUserProfile?.value.let {
+//            when (it) {
+//                is Resource.Failure -> {
+//                    val context = LocalContext.current
+//                    Toast.makeText(context, it.exception.message, Toast.LENGTH_SHORT).show()
+//                }
+//
+//                Resource.Loading -> {
+//                    CircularDotsAnimation()
+//                }
+//
+//                is Resource.Success -> {
+//                    userName = it.data.userName
+//                    if(it.data.profilePhotoUrl.isNullOrBlank()){
+//                       profilePhotoUrlEmpty = true
+//                    }
+//
+//                }
+//
+//                else -> {}
+//            }
+//        }
     }
 
 }
 
-@Preview
-@Composable
-fun CentralControlsPreview() {
-    CenterControls(
-        isPlaying = { true },
-        playbackState = { 0 },
-        onPauseToggle = { },
-        title = { "" },
-        track = null,
-        navController = null,
-        firestoreViewModel = null,
-        navEliminationViewModel = null
-    )
-}
+
+//@androidx.media3.common.util.UnstableApi
+//@Preview
+//@Composable
+//fun PreviewPlayer() {
+//    ExoplayerOutside()
+//}
+
+//@Preview
+//@Composable
+//fun CentralControlsPreview() {
+//    CenterControls(
+//        isPlaying = { true },
+//        playbackState = { 0 },
+//        onPauseToggle = { },
+//        title = { "" },
+//        track = null,
+//        navController = null,
+//
+//    )
+//}

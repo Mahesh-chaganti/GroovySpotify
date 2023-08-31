@@ -22,7 +22,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.groovyspotify.data.utils.SpotifyConstant
 import com.example.groovyspotify.model.swipeablescreens.SwipeableScreens
-import com.example.groovyspotify.ui.auth.AuthViewModel
+import com.example.groovyspotify.ui.auth.LoginViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
 import kotlinx.coroutines.launch
@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainHomeScreen(
-    viewModel: AuthViewModel?,
+    viewModel: LoginViewModel?,
     firestoreViewModel: FirestoreViewModel?,
     spotifyApiViewModel: SpotifyApiViewModel?,
     listOfSwipeableScreens: List<SwipeableScreens>?,
@@ -90,9 +90,9 @@ fun MainHomeScreen(
                 scope.launch {
 
 
-                    viewModel?.currentUser!!.email?.let { firestoreViewModel?.getMyUserProfile(it) }
+//                    viewModel?.currentUser?.email?.let { firestoreViewModel?.getMyUserProfile(it) }
                     firestoreViewModel?.getAllOtherUserProfiles()
-                    spotifyApiViewModel?.getAccessToken(authHeader)
+//                    spotifyApiViewModel?.getAccessToken(authHeader)
 
                 }
             }

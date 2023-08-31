@@ -20,7 +20,7 @@ class RealtimeDatabaseViewModel @Inject constructor(): ViewModel(){
                         .child("FriendRequest by: $senderUsername")
                         .setValue(FriendRequest(senderUsername,receiverUsername,status,time))
         }
-        fun sendUserData(userName: String,phone: String, fcmToken: String, friends: List<User>){
+        fun sendUserData(userName: String,phone: String, fcmToken: String, friends: List<String>){
                 realtimeDb.child("Users")
                         .child("User: $userName")
                         .setValue(User(userName,phone,fcmToken,friends))

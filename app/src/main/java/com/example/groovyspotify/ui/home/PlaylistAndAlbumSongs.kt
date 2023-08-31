@@ -15,7 +15,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.groovyspotify.model.spotifyapidata.playlist.Playlist
 import com.example.groovyspotify.model.spotifyapidata.track.Album
-import com.example.groovyspotify.ui.profilescreens.TrackRow
+import com.example.groovyspotify.ui.profilescreens.audio.TrackRow
 
 @Composable
 fun PlaylistSongs(playlist: Playlist, navController: NavController) {
@@ -27,7 +27,9 @@ fun PlaylistSongs(playlist: Playlist, navController: NavController) {
         LazyColumn(modifier = Modifier.fillMaxSize().align(Alignment.Center)) {
 
             itemsIndexed(playlist.tracks.items) { index, item ->
-                TrackRow(track = item, navController = navController)
+                TrackRow(track = item, navController = navController){
+
+                }
             }
         }
     }

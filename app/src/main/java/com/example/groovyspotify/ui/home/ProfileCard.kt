@@ -16,20 +16,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -41,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -49,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -59,25 +52,18 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.groovyspotify.R
 import com.example.groovyspotify.model.firestore.UserProfile
-import com.example.groovyspotify.model.profile.MusicLanguage
-import com.example.groovyspotify.model.profile.ProfileArtist
-import com.example.groovyspotify.model.profile.listOfMusicLanguages
+import com.example.groovyspotify.ui.auth.LoginViewModel
 import com.example.groovyspotify.ui.exoplayer.ExoplayerAnimation
-import com.example.groovyspotify.ui.exoplayer.NavEliminationViewModel
-import com.example.groovyspotify.ui.profilescreens.ButtonArtist
-import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
-import com.example.groovyspotify.ui.profilescreens.UniversalButton
 import font.helveticaFamily
-import kotlin.math.log
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProfileCard(
+    viewModel : LoginViewModel?,
     userProfile: UserProfile?,
     navController: NavController?,
     isHomeScreen : Boolean
@@ -139,7 +125,7 @@ fun ProfileCard(
                if (navController != null && !isHomeScreen) {
                    Button(
                        onClick = {
-
+//                            viewModel?.logout()
                            navController?.navigate("LoginAuthScreen") {
                                popUpTo("HomeScreen") { inclusive = true }
                            }
@@ -507,9 +493,9 @@ fun CardAlbumArt(isAudioPlaying: () -> Boolean, onPauseToggle: () -> Unit) {
     }
 
 }
-
-@Preview
-@Composable
-fun ProfileCardPreview() {
-    ProfileCard(null, rememberNavController(),false)
-}
+//
+//@Preview
+//@Composable
+//fun ProfileCardPreview() {
+//    ProfileCard(null, rememberNavController(),false,null)
+//}

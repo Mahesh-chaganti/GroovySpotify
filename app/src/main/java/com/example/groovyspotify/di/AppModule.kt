@@ -1,11 +1,15 @@
 package com.example.groovyspotify.di
 
 import com.example.groovyspotify.data.utils.SpotifyConstant
-import com.example.groovyspotify.data.emailAuth.AuthRepository
-import com.example.groovyspotify.data.emailAuth.AuthRepositoryImpl
 import com.example.groovyspotify.network.SpotifyApi
 import com.example.groovyspotify.network.SpotifyTokenService
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,10 +21,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(SingletonComponent::class)
 class AppModule {
     @Provides
-    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+    fun provideFirebaseAuth(): FirebaseAuth = Firebase.auth
 
     @Provides
-    fun provideAuthRepository(impl: AuthRepositoryImpl): AuthRepository = impl
+    fun providesFirestore(): FirebaseFirestore = Firebase.firestore
+
+    @Provides
+    fun providesStorage(): FirebaseStorage = Firebase.storage
+
 
     @Provides
     fun provideSpotifyApi(): SpotifyApi {
