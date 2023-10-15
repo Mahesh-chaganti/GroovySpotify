@@ -86,7 +86,8 @@ fun ProfileScreenLanguagesAndArtists(
 
                     UniversalButton(
                         modifier = Modifier.wrapContentSize(),
-                        data = item,)
+                        data = item,
+                        enabled = true)
                     { languagesAndArtistsViewModel.addLanguage(item) }
 
                 }
@@ -123,6 +124,7 @@ fun ProfileScreenLanguagesAndArtists(
                                     .padding(horizontal = 4.dp),
 
                                 data = item.name,
+                                enabled = true
 
                             ){
                                 languagesAndArtistsViewModel.addArtist(artist = item)

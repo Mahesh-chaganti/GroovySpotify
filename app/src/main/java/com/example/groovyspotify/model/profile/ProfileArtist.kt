@@ -1,11 +1,14 @@
 package com.example.groovyspotify.model.profile
 
+import android.os.Parcelable
 import android.provider.ContactsContract.Profile
+import kotlinx.parcelize.Parcelize
+
 
 data class ProfileArtist(
-    val name: String = "",
-    val language: String = "",
-    val id: String = "",
+    var name: String = "",
+    var language: String = "",
+    var id: String = "",
 )
 
 val listOfTeluguArtists = listOf<ProfileArtist>(

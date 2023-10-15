@@ -11,19 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,26 +25,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import com.example.groovyspotify.R
 import com.example.groovyspotify.data.utils.Resource
-import com.example.groovyspotify.model.firestore.Contact
 import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.ui.fcm.FCMViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.google.gson.Gson
 import font.helveticaFamily
-import kotlinx.coroutines.launch
-import kotlin.math.max
 
 @Composable
 fun HomeScreen(
@@ -142,8 +128,9 @@ fun HomeScreen(
 
                                     is Resource.Success -> {
                                         val similarityValue = calculateJaccardSimilarity(
-                                            mine.data.favoriteArtists,
-                                            it.favoriteArtists as List<String>
+                                            listOf(),
+//                                            mine.data.favArtists,
+                                            it.favArtists as List<String>
                                         )
                                         mapOfProfileSimilarities[it.userName] = similarityValue
                                         Log.d(
@@ -241,6 +228,9 @@ fun UserProfileList(userProfiles: List<UserProfile>, navController: NavControlle
 
 }
 
+fun ifSimilarProfiles(){
+
+}
 
 fun calculateJaccardSimilarity(listA: List<String>, listB: List<String>): Double {
 

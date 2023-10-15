@@ -1,6 +1,8 @@
 package com.example.groovyspotify.network
 
+import com.example.groovyspotify.model.spotifyapidata.albumwithtracks.AlbumWithTracks
 import com.example.groovyspotify.model.spotifyapidata.searchTAP.TrackAlbumPlaylist
+import com.example.groovyspotify.model.spotifyapidata.track.Album
 import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -13,11 +15,13 @@ import javax.inject.Singleton
 interface SpotifyApi {
 
 
-//    @GET("tracks/{trackId}")
-//    suspend fun getTrackData(
-//        @Path("trackId") trackId: String,
-//        @Header("Authorization") authorization: String
-//    ): TrackResponse
+    @GET("albums/{albumId}")
+    suspend fun getAlbumData(
+        @Path("albumId") albumId: String,
+        @Header("Authorization") authorization: String,
+        @Query("market") market: String,
+
+    ): AlbumWithTracks
 
     @GET("search")
     suspend fun getSearchTAPData(

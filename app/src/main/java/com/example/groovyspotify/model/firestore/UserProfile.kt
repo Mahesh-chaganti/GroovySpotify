@@ -1,33 +1,45 @@
 package com.example.groovyspotify.model.firestore
 
-import android.media.Image
-import android.net.Uri
 import android.os.Parcelable
-import android.provider.MediaStore.Audio.Media
-import androidx.versionedparcelable.VersionedParcelize
+import com.example.groovyspotify.model.profile.ProfileArtist
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
-import java.time.format.DateTimeFormatter
 
-@Parcelize
+
 data class UserProfile(
-    val uid: String = "",
-    val name: String = "",
-    val phone: String = "",
-    val userName: String = "",
-    val email: String = "",
-    val profilePhotoUrl: String = "",
-    var myLanguages: List<String> = listOf(),
-    val favoriteArtists: List<String> = listOf(),
-    val featuredAudio: String = "",
-    val age: String,
-    val gender: String,
-    val genderPreferences: String,
-    val swipesLeft:List<String> = listOf(),
+    var uid: String = "",
+    var name: String = "",
+    var phone: String = "",
+    var userName: String = "",
+    var email: String = "",
+    var profilePhotoUrl: String = "",
+    var favLanguages: List<String> = listOf(),
+    var favArtists: List<ProfileArtist> = listOf(),
+    var track: TrackData = TrackData(),
+    var age:String = "",
+    var gender: String = "",
+    var swipesLeft:List<String> = listOf(),
     var swipesRight: List<String> = listOf(),
     var matches: List<String> = listOf()
 
-): Parcelable
+
+){
+    fun toMap() = mapOf(
+        "uid" to uid,
+        "name" to name,
+        "phone" to phone,
+        "email" to email,
+        "userName" to userName,
+        "profilePhotoUrl" to profilePhotoUrl,
+        "gender" to gender,
+        "favLanguages" to favLanguages,
+        "favArtists" to favArtists,
+        "track" to track,
+        "age" to age,
+        "swipesLeft" to swipesLeft,
+        "swipesRight" to swipesRight,
+        "matches" to matches
+    )
+}
 object COLLECTION_NAMES{
     const val COLLECTION_PROFILES = "UserProfiles"
     const val COLLECTION_MESSAGES = "Messages"

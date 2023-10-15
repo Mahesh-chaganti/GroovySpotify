@@ -47,7 +47,7 @@ fun CommonButton(text: String, modifier: Modifier,color: ButtonColors,enabled: B
 
 
 @Composable
-fun UniversalButton(modifier: Modifier, data: Any,onClick: () -> Unit ) {
+fun UniversalButton(modifier: Modifier, data: Any,enabled : Boolean ,onClick: () -> Unit) {
 
     var colorChange by rememberSaveable { mutableStateOf(false) }
 
@@ -67,7 +67,8 @@ fun UniversalButton(modifier: Modifier, data: Any,onClick: () -> Unit ) {
                 contentColor = if (colorChange) Color.DarkGray else Color.White
 
 
-            )
+            ),
+        enabled = enabled
     ) {
 
         Text(

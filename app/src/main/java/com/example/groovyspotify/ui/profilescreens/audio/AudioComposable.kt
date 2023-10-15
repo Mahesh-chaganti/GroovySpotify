@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -40,11 +41,13 @@ import font.helveticaFamily
 
 
 @Composable
-fun OneTimeLazyRow(items: List<Playlist>, navController: NavController) {
+fun OneTimeLazyRow(items: List<Playlist>,featuredAudioViewModel: FeaturedAudioViewModel) {
 
     LazyRow() {
         itemsIndexed(items) { index, item ->
-            PlaylistRow(playlist = item, navController = navController)
+            PlaylistRow(playlist = item){
+                featuredAudioViewModel.onPlaylistClick(item)
+            }
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
@@ -54,21 +57,29 @@ fun OneTimeLazyRow(items: List<Playlist>, navController: NavController) {
 
 
 @Composable
-fun AlbumRow(album: Album, navController: NavController) {
+fun AlbumRow(album: Album, onAlbumClick: ()->Unit) {
     Box(modifier = Modifier.padding(start = 18.dp)) {
-        Row(
+        Row(modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .height(60.dp)
+            .clickable {
+                       onAlbumClick.invoke()
+            },
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
+
                 model = album.images[0].url,
                 contentDescription = "Album Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(36.dp)
                     .padding(4.dp)
+                    .size(60.dp)
             )
-            Column() {
+            Column(modifier = Modifier
+                .padding(8.dp),verticalArrangement = Arrangement.Center) {
                 Text(
                     text = album.name,
                     fontSize = 16.sp,
@@ -96,24 +107,25 @@ fun AlbumRow(album: Album, navController: NavController) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlaylistRow(playlist: Playlist, navController: NavController) {
-    var clickable by remember {
-        mutableStateOf(false)
-    }
-    var jsonData by remember {
-        mutableStateOf("")
-    }
-    if (clickable) {
-        navController.navigate("ExoPlayerImpl/$jsonData")
-    }
+fun PlaylistRow(playlist: Playlist, onPlaylistClick:()->Unit) {
+//    var clickable by remember {
+//        mutableStateOf(false)
+//    }
+//    var jsonData by remember {
+//        mutableStateOf("")
+//    }
+//    if (clickable) {
+//        navController.navigate("ExoPlayerImpl/$jsonData")
+//    }
     Column(
         modifier = Modifier
             .size(180.dp)
             .padding(4.dp)
             .clickable {
-                clickable = !clickable
-                jsonData = Uri.encode(Gson().toJson(playlist))
-                navController.navigate("PlaylistSongs/$jsonData")
+                onPlaylistClick.invoke()
+//                clickable = !clickable
+//                jsonData = Uri.encode(Gson().toJson(playlist))
+//                navController.navigate("PlaylistSongs/$jsonData")
             },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -143,7 +155,7 @@ fun PlaylistRow(playlist: Playlist, navController: NavController) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TrackRow(track: TrackResponse, navController: NavController,trackClick: () -> Unit) {
+fun TrackRow(track: TrackResponse,trackClick: () -> Unit) {
 //    var clickable by remember {
 //        mutableStateOf(false)
 //    }
@@ -162,19 +174,24 @@ fun TrackRow(track: TrackResponse, navController: NavController,trackClick: () -
 //            Log.d("clickedTrack", "TrackRow: $jsonData")
 
         }) {
-        Row(
+        Row(modifier =
+            Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .height(60.dp)
+            ,
             horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = track.album.images[0].url,
                 contentDescription = "Album Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(36.dp)
-                    .padding(4.dp)
+                modifier = Modifier.padding(4.dp)
+                .size(60.dp)
             )
-            Column() {
+            Column(modifier = Modifier
+                .padding(8.dp),verticalArrangement = Arrangement.Center) {
 
                 Text(
 
@@ -201,3 +218,4 @@ fun TrackRow(track: TrackResponse, navController: NavController,trackClick: () -
         }
     }
 }
+

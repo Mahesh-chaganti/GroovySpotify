@@ -4,7 +4,6 @@ package com.example.groovyspotify.navigation
 import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
@@ -12,29 +11,25 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-import com.example.groovyspotify.common.composable.NotificationMessage
-import com.example.groovyspotify.model.spotifyapidata.playlist.Playlist
-import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.model.swipeablescreens.SwipeableScreens
 import com.example.groovyspotify.ui.ParentViewModel
 import com.example.groovyspotify.ui.auth.LoginAuthScreen
 import com.example.groovyspotify.ui.auth.SignUpScreen
 import com.example.groovyspotify.ui.auth.LoginViewModel
 import com.example.groovyspotify.ui.auth.SignUpViewModel
-import com.example.groovyspotify.ui.exoplayer.ExoplayerImpl
 import com.example.groovyspotify.ui.fcm.FCMViewModel
+import com.example.groovyspotify.ui.genderanddob.GenderAndDobScreen
+import com.example.groovyspotify.ui.genderanddob.GenderAndDobViewModel
+import com.example.groovyspotify.ui.home.FeedScreen
+import com.example.groovyspotify.ui.home.accountinfo.AccountInfoScreen
+import com.example.groovyspotify.ui.profilescreens.audio.AlbumSongs
 //import com.example.groovyspotify.ui.home.AccountInfoScreen
-import com.example.groovyspotify.ui.home.FriendsScreen
-import com.example.groovyspotify.ui.home.HomeScreen
 import com.example.groovyspotify.ui.home.MainHomeScreen
-import com.example.groovyspotify.ui.home.MusicRoomsScreen
-import com.example.groovyspotify.ui.home.PlaylistSongs
-import com.example.groovyspotify.ui.home.ProfileCard
+import com.example.groovyspotify.ui.home.musicrooms.MusicRoomsScreen
+import com.example.groovyspotify.ui.profilescreens.audio.PlaylistSongs
 import com.example.groovyspotify.ui.home.SearchScreen
+import com.example.groovyspotify.ui.home.accountinfo.AccountInfoViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.profilescreens.PhotoUploadScreen
 import com.example.groovyspotify.ui.profilescreens.audio.FeaturedAudioViewModel
@@ -43,6 +38,8 @@ import com.example.groovyspotify.ui.profilescreens.languagesandartists.Languages
 import com.example.groovyspotify.ui.profilescreens.languagesandartists.ProfileScreenLanguagesAndArtists
 import com.example.groovyspotify.ui.realtimedatabase.RealtimeDatabaseViewModel
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
+import com.example.groovyspotify.ui.swipe.SwipeScreen
+import com.example.groovyspotify.ui.swipe.SwipeScreenViewModel
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.*
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -60,72 +57,29 @@ fun NavigationScreen(
     signUpViewModel: SignUpViewModel,
     featuredAudioViewModel: FeaturedAudioViewModel,
     languagesAndArtistsViewModel: LanguagesAndArtistsViewModel,
-    parentViewModel: ParentViewModel
+    genderAndDobViewModel: GenderAndDobViewModel,
+    parentViewModel: ParentViewModel,
+    swipeScreenViewModel: SwipeScreenViewModel,
+    accountInfoViewModel: AccountInfoViewModel
 ) {
+
     val navController = rememberAnimatedNavController()
     val x = parentViewModel.popupNotification.value
     Log.d("NavScreen", "NavigationScreen: ${x?.getContentOrNull().toString()}")
 //    NotificationMessage(vm = parentViewModel)
+fun popUp() {
+    navController.popBackStack()
+}
 
-
-    val listOfSwipeableScreens = listOf(
-        SwipeableScreens(
-            "Account", Icons.Filled.AccountCircle, content = {
-//                AccountInfoScreen(
-//                    viewModel = viewModel,
-//                    firestoreViewModel = firestoreViewModel,
-////                    navEliminationViewModel = navEliminationViewModel,
-//                    navController = navController
-//                )
-            }
-        ),
-        SwipeableScreens(
-            "Search", Icons.Filled.Search, content = {
-                SearchScreen(
-                    navController = navController,
-                    spotifyApiViewModel = spotifyApiViewModel
-                )
-            }
-        ),
-        SwipeableScreens(
-            "Discover", Icons.Filled.List, content = {
-                HomeScreen(
-                    navController = navController,
-                    firestoreViewModel = firestoreViewModel,
-                    fcmViewModel = fcmViewModel
-                )
-            }
-        ),
-        SwipeableScreens(
-            "Friends", Icons.Filled.Face, content = {
-                FriendsScreen(
-                    viewModel, firestoreViewModel, fcmViewModel, realtimeDatabaseViewModel
-                )
-            }
-        ),
-        SwipeableScreens(
-            "Rooms", Icons.Filled.Edit, content = {
-                MusicRoomsScreen(
-
-                )
-            }
-        ),
-
-        )
-
-
-    fun popUp() {
-        navController.popBackStack()
-    }
-
-    fun navigate(route: String) {
+    fun navigateTo(route: String) {
         navController.navigate(route) { launchSingleTop = true }
     }
 
     fun navigateAndPopUp(route: String, popUp: String) {
         navController.navigate(route) {
             launchSingleTop = true
-            popUpTo(popUp) { inclusive = true }
+            popUpTo(popUp) { inclusive = true
+           }
         }
     }
 
@@ -135,6 +89,52 @@ fun NavigationScreen(
             popUpTo(0) { inclusive = true }
         }
     }
+
+
+    val listOfSwipeableScreens = listOf(
+        SwipeableScreens(
+            "Account", Icons.Filled.AccountCircle, content = {
+                AccountInfoScreen(loginViewModel = viewModel, openGenderAndDob = {route-> navigateTo(route)},
+                    openAndPopUpLoginScreen = {route,popup-> navigateAndPopUp(route,popup)},
+                    openLanguagesAndArtists = {route -> navigateTo(route)},
+                    openSearch = {route -> navigateTo(route)},
+                    accountInfoViewModel = accountInfoViewModel,)
+            }
+        ),
+        SwipeableScreens(
+            "Search", Icons.Filled.Search, content = {
+                SearchScreen(
+
+                )
+            }
+        ),
+        SwipeableScreens(
+            "Discover", Icons.Filled.List, content = {
+                SwipeScreen(
+                    swipeScreenViewModel = swipeScreenViewModel,
+                    loginViewModel = viewModel
+                )
+            }
+        ),
+        SwipeableScreens(
+            "Feed", Icons.Filled.Face, content = {
+                FeedScreen(
+                    accountInfoViewModel,
+                    openSearch = {route -> navigateTo(route)}
+                )
+            }
+        ),
+        SwipeableScreens(
+            "Rooms", Icons.Filled.Edit, content = {
+                MusicRoomsScreen(
+                    loginViewModel = viewModel
+                )
+            }
+        ),
+
+        )
+
+
 
 
 
@@ -150,11 +150,8 @@ fun NavigationScreen(
 
             ) {
             MainHomeScreen(
-                viewModel = viewModel,
-                firestoreViewModel = firestoreViewModel,
-                spotifyApiViewModel = spotifyApiViewModel,
+
                 listOfSwipeableScreens = listOfSwipeableScreens,
-                navController = navController
             )
         }
         composable(
@@ -162,7 +159,8 @@ fun NavigationScreen(
 
             ) {
             LoginAuthScreen(loginViewModel = viewModel,
-                openAndPopUp = { route, popUp -> navigateAndPopUp(route, popUp) }
+                openAndPopUp = { route, popUp -> navigateAndPopUp(route, popUp)},
+                openScreen = {route -> clearAndNavigate(route)}
 
             )
         }
@@ -178,7 +176,6 @@ fun NavigationScreen(
 
         composable(
             "ProfileScreenLanguagesAndArtists",
-
             ) {
             ProfileScreenLanguagesAndArtists(
                 languagesAndArtistsViewModel = languagesAndArtistsViewModel,
@@ -188,67 +185,87 @@ fun NavigationScreen(
 
         composable(
             "ProfileFeaturedAudio",
-
-
             ) {
             ProfileFeaturedAudio(
 
                 featuredAudioViewModel,
-                navController
+                openScreen = { route -> navigateTo(route) },
+                openAndPopUp = {route,popup -> navigateAndPopUp(route,popup)}
+                
 
             )
+
         }
-        composable(
-            "ProfileCard/{isHomeScreen}/{userProfile}",
-            arguments = listOf(navArgument("isHomeScreen") { type = NavType.BoolType },
-                navArgument("userProfile") { type = UserProfileType() }
-            ),
-
-
-            ) {
-
-            ProfileCard(
-                viewModel = viewModel,
-                userProfile = it.arguments?.getParcelable("userProfile"),
-                navController = navController,
-                isHomeScreen = it.arguments!!.getBoolean("isHomeScreen")
+        composable("PlaylistSongs"){
+            PlaylistSongs(featuredAudioViewModel = featuredAudioViewModel,
+                openAndPopUp = {route,popup -> navigateAndPopUp(route,popup)}
             )
-
         }
-        composable(
-            "ExoPlayerImpl/{track}",
-            arguments = listOf(navArgument("track") { type = TrackType() }
-            ),
-
-            ) {
-
-            it.arguments?.getParcelable<TrackResponse>("track")?.let { it1 ->
-                ExoplayerImpl(
-                    featuredAudioViewModel,
-                    navController = navController,
-//                    track = it1
-                )
-            }
-
+        composable("AlbumSongs"){
+            AlbumSongs(featuredAudioViewModel = featuredAudioViewModel,
+                openAndPopUp = {route,popup -> navigateAndPopUp(route,popup)}
+            )
         }
-        composable(
-            "PlaylistSongs/{playlist}",
-            arguments = listOf(navArgument("playlist") { type = PlaylistType() }
-            ),
-
-            ) {
-
-
-            it.arguments?.getParcelable<Playlist>("playlist")?.let { it1 ->
-                PlaylistSongs(
-
-                    navController = navController,
-                    playlist = it1
-                )
-            }
-
-
+        composable("GenderAndDobScreen") {
+            GenderAndDobScreen(genderAndDobViewModel = genderAndDobViewModel,
+                openAndPopUp = { route, popup -> navigateAndPopUp(route, popup) }
+            )
         }
+
+
+
+//        composable(
+//            "ProfileCard/{isHomeScreen}/{userProfile}",
+//            arguments = listOf(navArgument("isHomeScreen") { type = NavType.BoolType },
+//                navArgument("userProfile") { type = UserProfileType() }
+//            ),
+//
+//
+//            ) {
+//
+//            ProfileCard(
+//                viewModel = viewModel,
+//                userProfile = it.arguments?.getParcelable("userProfile"),
+//                navController = navController,
+//                isHomeScreen = it.arguments!!.getBoolean("isHomeScreen")
+//            )
+//
+//        }
+//        composable(
+//            "ExoPlayerImpl/{track}",
+//            arguments = listOf(navArgument("track") { type = TrackType() }
+//            ),
+//
+//            ) {
+//
+//            it.arguments?.getParcelable<TrackResponse>("track")?.let { it1 ->
+//                ExoplayerImpl(
+//                    featuredAudioViewModel,
+//                    navController = navController,
+////                    track = it1
+//                )
+//            }
+//
+//        }
+
+//        composable(
+//            "PlaylistSongs/{playlist}",
+//            arguments = listOf(navArgument("playlist") { type = PlaylistType() }
+//            ),
+//
+//            ) {
+//
+//
+//            it.arguments?.getParcelable<Playlist>("playlist")?.let { it1 ->
+//                PlaylistSongs(
+//
+////                    navController = navController,
+////                    playlist = it1
+//                )
+//            }
+//
+//
+//        }
 
         composable(
             "AccountInfoScreen",

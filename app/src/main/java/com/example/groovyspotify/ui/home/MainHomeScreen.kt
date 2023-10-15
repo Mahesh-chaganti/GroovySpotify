@@ -2,6 +2,8 @@ package com.example.groovyspotify.ui.home
 
 import android.util.Base64
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -30,11 +32,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainHomeScreen(
-    viewModel: LoginViewModel?,
-    firestoreViewModel: FirestoreViewModel?,
-    spotifyApiViewModel: SpotifyApiViewModel?,
+
     listOfSwipeableScreens: List<SwipeableScreens>?,
-    navController: NavController
+
 ) {
     // This scope is necessary to change the tab using animation
     val scope = rememberCoroutineScope()
@@ -43,10 +43,7 @@ fun MainHomeScreen(
     // This page state will be used by BottomAppbar and HorizontalPager
     val pageState = rememberPagerState(listOfSwipeableScreens!!.size / 2)
     val scaffoldState = rememberScaffoldState()
-    val clientId = SpotifyConstant.clientId // Your client id
-    val clientSecret = SpotifyConstant.clientSecret// Your secret
-    val authHeader =
-        "Basic " + Base64.encodeToString("$clientId:$clientSecret".toByteArray(), Base64.NO_WRAP)
+
     Scaffold(
         scaffoldState = scaffoldState,
         bottomBar = {
@@ -64,6 +61,7 @@ fun MainHomeScreen(
                             onClick = {
                                 // When a tab is selected,
                                 // the page is updated
+
                                 scope.launch {
                                     pageState.animateScrollToPage(i)
                                 }
@@ -77,12 +75,14 @@ fun MainHomeScreen(
             )
         },
     ) {
+
         HorizontalPager(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
             state = pageState,
-            pageCount = listOfSwipeableScreens!!.size
+            pageCount = listOfSwipeableScreens!!.size,
+            userScrollEnabled = false
         ) { page ->
             listOfSwipeableScreens[page].content()
             val scope = rememberCoroutineScope()
@@ -91,7 +91,7 @@ fun MainHomeScreen(
 
 
 //                    viewModel?.currentUser?.email?.let { firestoreViewModel?.getMyUserProfile(it) }
-                    firestoreViewModel?.getAllOtherUserProfiles()
+//                    firestoreViewModel?.getAllOtherUserProfiles()
 //                    spotifyApiViewModel?.getAccessToken(authHeader)
 
                 }
@@ -101,8 +101,8 @@ fun MainHomeScreen(
 }
 
 
-@Preview
-@Composable
-fun PreviewBottomNavigationWithSwipeableScreens() {
-    MainHomeScreen(null, null, null, null,rememberNavController())
-}
+//@Preview
+//@Composable
+//fun PreviewBottomNavigationWithSwipeableScreens() {
+//    MainHomeScreen(null, null, null, null,rememberNavController())
+//}

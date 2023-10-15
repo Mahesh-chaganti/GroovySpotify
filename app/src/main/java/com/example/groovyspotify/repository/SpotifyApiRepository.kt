@@ -3,6 +3,7 @@ package com.example.groovyspotify.repository
 import android.util.Log
 import com.example.groovyspotify.data.utils.Resource
 import com.example.groovyspotify.model.SpotifyAccessTokenResponse
+import com.example.groovyspotify.model.spotifyapidata.albumwithtracks.AlbumWithTracks
 import com.example.groovyspotify.model.spotifyapidata.searchTAP.TrackAlbumPlaylist
 import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.network.SpotifyApi
@@ -51,7 +52,11 @@ class SpotifyApiRepository @Inject constructor(
 ////        _tapState.value = result
 //    }
     suspend fun getSearchTAPData(
-        query: String, authorization: String, type: String, limit: Int, market: String,
+        query: String,
+        authorization: String,
+        type: String,
+        limit: Int,
+        market: String,
         handleException: (Exception?, String) -> Unit, handleSuccess: (Exception?, String) -> Unit
     ): TrackAlbumPlaylist {
 
@@ -76,5 +81,33 @@ class SpotifyApiRepository @Inject constructor(
         }
         return result
     }
+
+    suspend fun getAlbumData(
+        albumId: String,
+        authorization: String,
+        market: String,
+        handleException: (Exception?, String) -> Unit, handleSuccess: (Exception?, String) -> Unit
+    ): AlbumWithTracks{
+        var result: AlbumWithTracks
+        try {
+         result = api
+             .getAlbumData(
+                albumId = albumId,
+                authorization = authorization,
+                market = market
+            )
+
+            Log.d("Search", "Search success")
+            handleSuccess(null, "Search Success")
+        }catch (e: Exception){
+            handleException(e, "Search failed")
+            Log.d("Search", "Search Failed: $e")
+
+            e.printStackTrace()
+            return  AlbumWithTracks()
+        }
+        return result
+    }
+
 
 }

@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.groovyspotify.common.composable.CheckSignedIn
 import com.example.groovyspotify.common.composable.ColoredText
 import com.example.groovyspotify.common.composable.CommonButton
 import com.example.groovyspotify.common.composable.CommonProgressSpinner
@@ -40,6 +41,7 @@ import com.example.groovyspotify.common.composable.ExtraBoldText
 import com.example.groovyspotify.common.composable.PasswordFieldComposable
 import com.example.groovyspotify.common.composable.displayToast
 import com.example.groovyspotify.ui.home.CircularDotsAnimation
+import javax.annotation.CheckForSigned
 import com.example.groovyspotify.R.string as AppText
 
 
@@ -47,6 +49,7 @@ import com.example.groovyspotify.R.string as AppText
 fun LoginAuthScreen(
     loginViewModel: LoginViewModel,
     openAndPopUp: (String,String) -> Unit,
+    openScreen:(String)->Unit
 
 ) {
     val uiState by loginViewModel.uiState
@@ -90,7 +93,7 @@ fun LoginAuthScreen(
         }
     }
 
-
+    CheckSignedIn(loginViewModel = loginViewModel, openScreen = openScreen)
     Box(
         modifier = Modifier
             .fillMaxSize()

@@ -29,6 +29,8 @@ import com.example.groovyspotify.navigation.NavigationScreen
 import com.example.groovyspotify.ui.ParentViewModel
 import com.example.groovyspotify.ui.auth.SignUpViewModel
 import com.example.groovyspotify.ui.fcm.FCMViewModel
+import com.example.groovyspotify.ui.genderanddob.GenderAndDobViewModel
+import com.example.groovyspotify.ui.home.accountinfo.AccountInfoViewModel
 import com.example.groovyspotify.ui.profilescreens.FirestoreViewModel
 import com.example.groovyspotify.ui.profilescreens.audio.FeaturedAudioViewModel
 import com.example.groovyspotify.ui.profilescreens.languagesandartists.LanguagesAndArtistsViewModel
@@ -37,6 +39,7 @@ import com.example.groovyspotify.ui.realtimedatabase.RealtimeDatabaseViewModel
 //import com.example.groovyspotify.ui.profilescreens.loadImageFromUri
 //import com.example.groovyspotify.ui.profilescreens.openGallery
 import com.example.groovyspotify.ui.spotifyauth.SpotifyApiViewModel
+import com.example.groovyspotify.ui.swipe.SwipeScreenViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -51,6 +54,11 @@ class MainActivity : ComponentActivity() {
     private val languagesAndArtistsViewModel by  viewModels<LanguagesAndArtistsViewModel>()
     private val featuredAudioViewModel by  viewModels<FeaturedAudioViewModel>()
     private val parentViewModel by viewModels<ParentViewModel>()
+    private val genderAndDobViewModel by viewModels<GenderAndDobViewModel>()
+    private val swipeScreenViewModel by viewModels<SwipeScreenViewModel>()
+    private val accountInfoViewModel by viewModels<AccountInfoViewModel>()
+
+
 
 
 
@@ -157,7 +165,11 @@ class MainActivity : ComponentActivity() {
                     signUpViewModel = signupViewModel,
                     featuredAudioViewModel = featuredAudioViewModel,
                     languagesAndArtistsViewModel = languagesAndArtistsViewModel,
-                    parentViewModel = parentViewModel
+                    genderAndDobViewModel = genderAndDobViewModel,
+                    parentViewModel = parentViewModel,
+                    swipeScreenViewModel = swipeScreenViewModel,
+                    accountInfoViewModel = accountInfoViewModel
+
                 )
 
 

@@ -156,7 +156,7 @@ fun ProfileCard(
 @Composable
 fun ReUsableProfileCard(userProfile: UserProfile?, modifier: Modifier) {
     val context = LocalContext.current
-    val randomSubset = userProfile?.favoriteArtists?.chunked(5)
+    val randomSubset = userProfile?.favArtists?.chunked(5)
     Log.d("Profile", "ProfileCard: $userProfile")
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
@@ -166,7 +166,7 @@ fun ReUsableProfileCard(userProfile: UserProfile?, modifier: Modifier) {
                     MediaItem.Builder()
                         .apply {
                             setUri(
-                                userProfile?.featuredAudio
+                                userProfile?.track?.previewUrl
                             )
                             setMediaMetadata(
                                 MediaMetadata.Builder()
@@ -389,7 +389,7 @@ fun ArtistsAndLanguagesGrid(userProfile: UserProfile) {
             rows = StaggeredGridCells.Fixed(3)
         ) {
 
-            itemsIndexed(userProfile?.favoriteArtists as List<String>) { index, item ->
+            itemsIndexed(userProfile?.favArtists as List<String>) { index, item ->
                 LangAndArtistButton(modifier = Modifier.wrapContentSize(), text = item)
             }
         }
@@ -412,7 +412,7 @@ fun ArtistsAndLanguagesGrid(userProfile: UserProfile) {
             rows = StaggeredGridCells.Fixed(3)
         ) {
 
-            itemsIndexed(userProfile?.myLanguages as List<String>) { index, item ->
+            itemsIndexed(userProfile?.favLanguages as List<String>) { index, item ->
                 LangAndArtistButton(modifier = Modifier.wrapContentSize(), text = item)
             }
         }

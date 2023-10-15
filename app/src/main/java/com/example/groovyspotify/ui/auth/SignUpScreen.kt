@@ -87,7 +87,8 @@ fun SignUpScreen(
                 value = uiState.userName,
                 onNewValue =
                 signupViewModel::onUserNameChange,
-                modifier = Modifier, text = AppText.username
+                modifier = Modifier, text = AppText.username,
+
             )
 
             Spacer(modifier = Modifier.height(8.dp))

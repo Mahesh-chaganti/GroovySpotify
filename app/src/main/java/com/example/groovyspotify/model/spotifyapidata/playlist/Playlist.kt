@@ -6,7 +6,6 @@ import com.example.groovyspotify.model.spotifyapidata.track.ExternalUrls
 import com.example.groovyspotify.model.spotifyapidata.track.Image
 import kotlinx.parcelize.Parcelize
 
-@Parcelize
 data class Playlist(
     val collaborative: Boolean = false,
     val description: String = "",
@@ -23,4 +22,4 @@ data class Playlist(
     val tracks: Tracks = Tracks(),
     val type: String = "",
     val uri: String = ""
-) : Parcelable
+)

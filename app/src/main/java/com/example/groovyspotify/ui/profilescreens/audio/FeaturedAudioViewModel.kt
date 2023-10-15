@@ -4,11 +4,14 @@ import android.util.Base64
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
+import androidx.media3.exoplayer.ExoPlayer
 import com.example.groovyspotify.data.utils.SpotifyConstant
 import com.example.groovyspotify.model.SpotifyAccessTokenResponse
+import com.example.groovyspotify.model.firestore.TrackData
 import com.example.groovyspotify.model.services.FirestoreService
 import com.example.groovyspotify.model.services.LogService
 import com.example.groovyspotify.model.services.common.Event
+import com.example.groovyspotify.model.spotifyapidata.playlist.Playlist
 import com.example.groovyspotify.model.spotifyapidata.searchTAP.TrackAlbumPlaylist
 import com.example.groovyspotify.model.spotifyapidata.track.TrackResponse
 import com.example.groovyspotify.repository.SpotifyApiRepository
@@ -21,10 +24,13 @@ import javax.inject.Inject
 class FeaturedAudioViewModel @Inject constructor(
     logService: LogService,
     private val repository: SpotifyApiRepository,
-    private val firestoreService: FirestoreService
+    private val firestoreService: FirestoreService,
+
 ) : ParentViewModel(logService) {
+
     var uiState = mutableStateOf(FeaturedAudioUiState())
         private set
+
 
     var openDialog = mutableStateOf(false)
         private set
@@ -102,6 +108,7 @@ class FeaturedAudioViewModel @Inject constructor(
     fun onTrackClick(trackResponse: TrackResponse){
            uiState.value.clickedTrack = trackResponse
         openDialog.value = true
+        Log.d("Dialog", "onTrackClick: ${openDialog.value}")
     }
 
     fun onSetTrack(trackResponse: TrackResponse)
@@ -110,22 +117,26 @@ class FeaturedAudioViewModel @Inject constructor(
     }
     fun onDismissClick(){
         openDialog.value = false
+        Log.d("Dialog", "onTrackClick: ${openDialog.value}")
+
     }
-    fun onConfirmClick(){
+    fun onConfirmClick(openAndPopUp: (String, String)-> Unit){
         openDialog.value = false
         inProgress.value = true
         val mapData = mapOf(
-            "track" to mapOf(
-                "album" to uiState.value.featuredTrack.album.name,
-                "artists" to uiState.value.featuredTrack.artists,
-                "external_urls" to uiState.value.featuredTrack.external_urls,
-                "id" to uiState.value.featuredTrack.id,
-                "name" to uiState.value.featuredTrack.name,
-                "preview_url" to uiState.value.featuredTrack.preview_url,
-                "images" to uiState.value.featuredTrack.album.images,
-                "release_date" to uiState.value.featuredTrack.album.release_date
+            "track" to TrackData(
+                uiState.value.featuredTrack.album.name,
+                uiState.value.featuredTrack.artists,
+                uiState.value.featuredTrack.external_urls,
+                uiState.value.featuredTrack.id,
+                uiState.value.featuredTrack.album.images,
+                uiState.value.featuredTrack.name,
+                uiState.value.featuredTrack.preview_url,
+                uiState.value.featuredTrack.album.release_date
 
             )
+
+
         )
         viewModelScope.launch {
             firestoreService.createOrUpdateMyUserProfile(mapData, handleException = {
@@ -141,6 +152,8 @@ class FeaturedAudioViewModel @Inject constructor(
                 val errorMsg = exception?.localizedMessage ?: ""
                 val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
                 onPopupNotificationChange(popMsg = message)
+
+                openAndPopUp("GenderAndDobScreen","ProfileFeaturedAudio")
             }
         }
 
@@ -150,6 +163,32 @@ class FeaturedAudioViewModel @Inject constructor(
             poppy.value = Event(popMsg)
             inProgress.value = false
     }
+    fun onPlaylistClick(playlist: Playlist){
+        uiState.value.clickedPlaylist = playlist
+    }
 
+
+    fun getAlbumData(albumId: String) {
+        viewModelScope.launch {
+            uiState.value.clickedAlbum = repository.getAlbumData(
+                albumId = albumId,
+                authorization = "Bearer ${accessToken.value.accessToken}",
+                market = "IN",
+                handleException = { exception, msg ->
+
+                    exception?.printStackTrace()
+                    val errorMsg = exception?.localizedMessage ?: ""
+                    val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
+                    onPopupNotificationChange(popMsg = message)
+                }
+            ) { exception, msg ->
+
+                exception?.printStackTrace()
+                val errorMsg = exception?.localizedMessage ?: ""
+                val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
+                onPopupNotificationChange(popMsg = message)
+            }
+        }
+    }
 
 }

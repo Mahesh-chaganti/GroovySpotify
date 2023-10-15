@@ -1,4 +1,4 @@
-package com.example.groovyspotify.ui.home
+package com.example.groovyspotify.ui.home.musicrooms
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,10 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.groovyspotify.R
+import com.example.groovyspotify.ui.auth.LoginViewModel
+import com.example.groovyspotify.ui.swipe.SwipeScreenViewModel
 import font.helveticaFamily
 
 @Composable
-fun MusicRoomsScreen() {
+fun MusicRoomsScreen(loginViewModel: LoginViewModel) {
+    val chatList by loginViewModel.chatListStateFlow.collectAsState()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -47,14 +53,15 @@ fun MusicRoomsScreen() {
                 .align(Alignment.TopEnd)
                 .padding(18.dp)
                 .size(24.dp)
-                .clickable {  },
+                .clickable { },
             imageVector = Icons.Filled.Notifications,
             contentDescription = "Back button",
             tint = Color.White
         )
         Text(
             modifier = Modifier
-                .align(Alignment.TopCenter).padding(8.dp),
+                .align(Alignment.TopCenter)
+                .padding(8.dp),
             text = "Musicrooms",
             fontSize = 36.sp,
             fontFamily = helveticaFamily,
@@ -63,7 +70,9 @@ fun MusicRoomsScreen() {
             color = Color.White
         )
         Column(modifier = Modifier
-            .fillMaxSize().padding(top = 50.dp).padding(16.dp)
+            .fillMaxSize()
+            .padding(top = 50.dp)
+            .padding(16.dp)
         ) {
 
 
@@ -73,12 +82,13 @@ fun MusicRoomsScreen() {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                items(10) {
+                itemsIndexed(chatList) {index, item ->
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp)
-                            .clickable {  },
+                            .clickable { },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Start
                     ) {
@@ -86,10 +96,11 @@ fun MusicRoomsScreen() {
 
 
                             AsyncImage(
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier
+                                    .size(48.dp)
                                     .background(shape = CircleShape, color = Color.White)
                                     .padding(8.dp),
-                                model = R.drawable.image,
+                                model = item.user2.imageUrl,
                                 contentDescription = "user",
                                 contentScale = ContentScale.Crop,
                                 alignment = Alignment.Center,
@@ -103,7 +114,7 @@ fun MusicRoomsScreen() {
                         ) {
                             Text(
                                 modifier = Modifier.padding(2.dp),
-                                text = "User $it",
+                                text = item.user2.name,
                                 fontSize = 18.sp,
                                 fontFamily = helveticaFamily,
                                 fontStyle = FontStyle.Normal,
@@ -132,8 +143,8 @@ fun MusicRoomsScreen() {
 
 
 
-@Preview
-@Composable
-fun MusicScreensPreview() {
-    MusicRoomsScreen()
-}
+//@Preview
+//@Composable
+//fun MusicScreensPreview() {
+////    MusicRoomsScreen()
+//}

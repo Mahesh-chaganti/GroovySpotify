@@ -37,7 +37,8 @@ fun BasicFieldComposable(
     @StringRes text: Int,
     value: String,
     onNewValue: (String) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
+
 ) {
     OutlinedTextField(
         value = value,
@@ -45,10 +46,34 @@ fun BasicFieldComposable(
         label = {
             CommonText(text = stringResource(id = text), modifier = Modifier)
         },
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().padding(5.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = commonTextFieldColors()
+        colors = commonTextFieldColors(),
+
     )
+
+}
+
+@Composable
+fun BasicKeyboardFieldComposable(
+    @StringRes text: Int,
+    value: String,
+    onNewValue: (String) -> Unit,
+    modifier: Modifier,
+    keyboardType: KeyboardType
+    ) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onNewValue,
+        label = {
+            CommonText(text = stringResource(id = text), modifier = Modifier)
+        },
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = commonTextFieldColors(),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+
+        )
 
 }
 

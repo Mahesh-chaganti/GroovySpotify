@@ -30,7 +30,8 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth,priv
 
 
     override suspend fun login(email: String, password: String,handleException: (Exception?, String) -> Unit,handleSuccess: (Exception?, String) -> Unit){
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {task ->
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener {task ->
             if(task.isSuccessful){
                 Log.d("SuccessTask", "Login: ${task.exception}")
                 handleSuccess(null,"Login successful")
@@ -90,11 +91,11 @@ class AccountServiceImpl @Inject constructor(private val auth: FirebaseAuth,priv
     }
 
 
-    override fun logout() {
-        if (auth.currentUser!!.isAnonymous) {
-            auth.currentUser!!.delete()
-        }
-        auth.signOut()
+    override suspend fun logout() {
+
+            auth.signOut()
+
+
     }
 
 

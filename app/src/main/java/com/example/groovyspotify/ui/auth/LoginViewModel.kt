@@ -1,8 +1,12 @@
 package com.example.groovyspotify.ui.auth
 
+import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.viewModelScope
 import com.example.groovyspotify.common.ext.isValidEmail
+import com.example.groovyspotify.model.firestore.ChatData
+import com.example.groovyspotify.model.firestore.UserProfile
 import com.example.groovyspotify.model.services.AccountService
 import com.example.groovyspotify.model.services.FirestoreService
 import com.example.groovyspotify.model.services.LogService
@@ -11,6 +15,8 @@ import com.example.groovyspotify.model.services.common.HandleException
 import com.example.groovyspotify.ui.ParentViewModel
 import com.google.firebase.auth.AuthCredential
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,6 +26,10 @@ class LoginViewModel @Inject constructor(
     private val firestoreService: FirestoreService,
     logService: LogService
 ) : ParentViewModel(logService) {
+    var userGetting = mutableStateOf(false)
+        private set
+    var signedIn = mutableStateOf(false)
+        private set
 
     var loginInProgress = mutableStateOf(false)
         private set
@@ -31,6 +41,19 @@ class LoginViewModel @Inject constructor(
     var uiState = mutableStateOf(LoginUiState())
         private set
 
+    var profilesInProgress = mutableStateOf(false)
+        private set
+
+    var userDataState = mutableStateOf(UserProfile())
+        private set
+
+    var logoutInProgress = mutableStateOf(false)
+        private set
+
+
+
+    private val _chatListStateFlow = MutableStateFlow<List<ChatData>>(listOf())
+    val chatListStateFlow: StateFlow<List<ChatData>> = _chatListStateFlow
 
 
     private val email
@@ -38,24 +61,89 @@ class LoginViewModel @Inject constructor(
     private val password
         get() = uiState.value.password
 
+    private val _userProfilesStateFlow = MutableStateFlow<List<UserProfile>>(listOf())
+    val userProfilesStateFlow: StateFlow<List<UserProfile>> = _userProfilesStateFlow
+
 
     init {
-        viewModelScope.launch {
-//            accountService.currentUserId?.let {
-//                firestoreService.getMyUserProfile(it, handleException = {
-//                    exception, msg ->
-//                    val message = HandleException(exception,msg)
-//                    onPopupNotificationChange(message)
-//                }){
-//                    exception, msg ->
-//                    val message = HandleException(exception,msg)
-//                    onPopupNotificationChange(message)
-//                    //populate cards
-//                    // populate chats
-//                }
-//            }
-        }
 
+        signedIn.value = accountService.currentUser != null
+        getMyUserFun()
+
+    }
+
+    fun getMyUserFun(){
+        userGetting.value = true
+        viewModelScope.launch {
+
+            accountService.currentUserId?.let {
+
+
+                firestoreService.getMyUserProfile(it, handleException = { exception, msg ->
+                    exception?.printStackTrace()
+                    val errorMsg = exception?.localizedMessage ?: ""
+                    val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
+                    onPopupNotificationChange(message)
+                }) { user, msg ->
+
+                    onPopupNotificationChange(msg)
+                    userDataState.value = user
+                    populateCardsFun()
+                    populateChatsFun()
+
+
+
+                }
+            }
+
+
+
+        }
+    }
+    fun populateChatsFun(){
+
+        viewModelScope.launch {
+
+
+            firestoreService.populateChats(
+                handleException = { exception, msg ->
+                    exception?.printStackTrace()
+                    val errorMsg = exception?.localizedMessage ?: ""
+                    val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
+                    onPopupNotificationChange(message)
+
+                }
+            ) { listOfChats ->
+
+              _chatListStateFlow.value = listOfChats
+
+            }
+        }
+    }
+
+    fun populateCardsFun(){
+        profilesInProgress.value = true
+        viewModelScope.launch {
+
+
+            firestoreService.populateCards(
+                handleException = { exception, msg ->
+                    exception?.printStackTrace()
+                    val errorMsg = exception?.localizedMessage ?: ""
+                    val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
+                    onPopupNotificationChange(message)
+
+                }
+            ) { profiles, msg ->
+                onPopupNotificationChange(msg)
+                _userProfilesStateFlow.value = profiles
+
+
+
+            }
+
+            Log.d("ExceptionalViewMOdel", "${_userProfilesStateFlow.value} ")
+        }
 
     }
 
@@ -95,10 +183,21 @@ class LoginViewModel @Inject constructor(
                 exception?.printStackTrace()
                 val errorMsg = exception?.localizedMessage ?: ""
                 val message = if (msg.isEmpty()) errorMsg else "$msg: $errorMsg"
-                onPopupNotificationChange(popMsg = message)
-                //call profiles screen
-                openAndPopUp("ProfileScreenLanguagesAndArtists","LoginAuthScreen")
+                signedIn.value = true
 
+                onPopupNotificationChange(popMsg = message)
+
+
+                //call profiles screen
+//                if(userDataState.value != null){
+//                    if(userDataState.value.favArtists.isNullOrEmpty() || userDataState.value.favLanguages.isNullOrEmpty()){
+//                        openAndPopUp("ProfileScreenLanguagesAndArtists","LoginAuthScreen")
+//                    }
+//
+//
+//                }
+                getMyUserFun()
+                
 
             }
 
@@ -111,7 +210,29 @@ class LoginViewModel @Inject constructor(
 
     private fun onPopupNotificationChange(popMsg: String) {
         poppy.value = Event(popMsg)
+
         loginInProgress.value = false
+        logoutInProgress.value = false
+        userGetting.value = false
+        profilesInProgress.value = false
+
+    }
+    fun signout(onSuccess:() -> Unit ){
+        logoutInProgress.value = true
+        viewModelScope.launch {
+            try {
+                accountService.logout()
+                signedIn.value = false
+                onSuccess()
+                onPopupNotificationChange("Logout success")
+                uiState.value = LoginUiState()
+                
+            }catch (e: Exception){
+                e.message?.let { onPopupNotificationChange(it )}
+            }
+        }
+
+
     }
 
     fun onGoogleSignInClick(credential: AuthCredential) {
